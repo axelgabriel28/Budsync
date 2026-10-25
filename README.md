@@ -1,4 +1,4 @@
-# Budsync
+# Budsync (In development phase)
 
 Budsync is a phone-friendly finance tracker for managing money across multiple wallets. Record your activity in Philippine pesos, see where your money went, and keep a clear picture of each wallet's balance. Budsync does not connect to a bank or create transactions for you.
 
