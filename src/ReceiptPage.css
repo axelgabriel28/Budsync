@@ -7,6 +7,9 @@
 .receipt-drive-panel small { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
 .receipt-drive-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .receipt-drive-actions button { min-height: 44px; }
+.drive-folder-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 700; text-decoration: none; transition: transform 180ms var(--ease), background 180ms var(--ease), border-color 180ms var(--ease); }
+.drive-folder-link:hover { transform: translateY(-1px); border-color: var(--ink); background: var(--surface-soft); }
+.drive-folder-link:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
 .receipt-image-status { font-weight: 700; }
 .receipt-image-status.pending { color: var(--ink); }
 .receipt-layout { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: 16px; align-items: start; }

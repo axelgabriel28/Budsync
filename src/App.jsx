@@ -117,6 +117,9 @@ function App() {
   const persistQueue = useRef(Promise.resolve())
   const saveRequest = useRef(0)
   const data = workspace.data
+  const driveFolderUrl = driveSession?.folderId
+    ? `https://drive.google.com/drive/folders/${encodeURIComponent(driveSession.folderId)}`
+    : ''
   const categoryOptions = useMemo(() => ({
     income: categoryChoices(categories.income, data.entries.filter((entry) => entry.type === 'income').map((entry) => entry.category)),
     expense: categoryChoices(categories.expense, [
@@ -743,6 +746,10 @@ function App() {
     try {
       const restored = await pullDriveReceipts(current)
       const result = await syncToDrive(current.token, current.scope, workspaceRef.current.data.wallets)
+      if (result.rootId && current.folderId !== result.rootId) {
+        current.folderId = result.rootId
+        setDriveSession({ ...current })
+      }
       await recordDriveSync(current, result)
       setDriveStatus(`Google Drive updated${result.uploaded ? `: ${result.uploaded} files` : ''}${restored.receipts ? `; downloaded ${restored.receipts} receipts` : ''}.`)
       const confirmed = result.syncedReceipts.filter(({ id, revision }) =>
@@ -785,6 +792,9 @@ function App() {
       setDriveStatus('Connected. Checking Drive for receipt changes…')
       const restored = await pullDriveReceipts(current)
       const uploaded = await syncToDrive(current.token, current.scope, workspaceRef.current.data.wallets)
+      current.folderId = uploaded.rootId
+      driveSessionRef.current = current
+      setDriveSession({ ...current })
       await recordDriveSync(current, uploaded)
       setDriveStatus(`Connected. Updated ${restored.folders} folders and ${restored.receipts} receipts; uploaded ${uploaded.uploaded} files.${restored.skipped ? ` ${restored.skipped} items need matching wallets.` : ''}`)
     } catch (cause) { setDriveUploadError(cause.message); setDriveStatus(`Google Drive connection failed: ${cause.message}`) }
@@ -870,7 +880,7 @@ function App() {
 
         {page === 'reports' && <Reports report={report} month={reportMonth} onMonth={setReportMonth} budgets={data.budgets || []} goals={data.goals || []} wallets={data.wallets} balances={balances} hidden={balanceHidden} categoryOptions={categoryOptions} onAddBudget={addBudget} onRemoveBudget={removeBudget} onAddGoal={addGoal} onRemoveGoal={removeGoal} />}
 
-        {page === 'receipts' && <ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} hidden={balanceHidden} />}
+        {page === 'receipts' && <ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} hidden={balanceHidden} />}
 
         {page === 'account' && <div className="data-page">
           <div className="page-head"><div><div className="eyebrow">YOUR SPACE</div><h1>Settings</h1><p>Personalize Budsync, manage your account, and control your data.</p></div></div>
@@ -900,7 +910,7 @@ function App() {
               </form>
             </> : <p>Account access needs the Firebase web app values in <code>.env.local</code>.</p>}
           </>}</section>
-          <section className="data-card"><h2>Google Drive receipts</h2><p>Connect a Google account to upload and restore receipt folders and images. Budsync creates <code>Budsync / wallet name / folder name / files</code> in Drive. Deleted local receipts and folders move to Drive Trash on the next sync. Your local copy remains available while disconnected.</p>{googleClientId ? <div className="button-row"><button className="primary" type="button" disabled={driveBusy || !isOnline} onClick={connectDrive}>{driveSession ? 'Reconnect Google Drive' : 'Connect Google Drive'}</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={uploadReceipts}>Sync receipts now</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={restoreDrive}>Download Drive changes</button></div> : <p>Google Drive uploads are not set up for this site. Add a Google OAuth Web client ID as <code>VITE_GOOGLE_CLIENT_ID</code>, then rebuild and deploy the app. Images saved now stay on this device. The README has setup steps.</p>}{driveStatus && <p className="sync-state" role="status">{driveStatus}</p>}</section>
+          <section className="data-card"><h2>Google Drive receipts</h2><p>Connect a Google account to upload and restore receipt folders and images. Budsync creates <code>Budsync / wallet name / folder name / files</code> in Drive. Deleted local receipts and folders move to Drive Trash on the next sync. Your local copy remains available while disconnected.</p>{googleClientId ? <div className="button-row"><button className="primary" type="button" disabled={driveBusy || !isOnline} onClick={connectDrive}>{driveSession ? 'Reconnect Google Drive' : 'Connect Google Drive'}</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={uploadReceipts}>Sync receipts now</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={restoreDrive}>Download Drive changes</button>{driveFolderUrl && <a className="drive-folder-link" href={driveFolderUrl} target="_blank" rel="noopener noreferrer">Open Budsync folder <span aria-hidden="true">↗</span></a>}</div> : <p>Google Drive uploads are not set up for this site. Add a Google OAuth Web client ID as <code>VITE_GOOGLE_CLIENT_ID</code>, then rebuild and deploy the app. Images saved now stay on this device. The README has setup steps.</p>}{driveStatus && <p className="sync-state" role="status">{driveStatus}</p>}</section>
           </>}
           {settingsSection === 'data' && <>
           <section className="data-card settings-card"><div className="settings-card-heading"><span className="settings-icon"><NavIcon name="receipts" size={19} /></span><div><h2>Your data</h2><p>{session ? 'Your account workspace is saved on this device and syncs with your account when online.' : 'Your guest workspace is saved in this browser on this device.'} Receipt images are stored separately on this device unless Google Drive sync is connected.</p></div></div></section>

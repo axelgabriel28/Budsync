@@ -143,6 +143,7 @@ test('a receipt is confirmed only after its metadata and image reach Drive', asy
   try {
     const saved = await syncToDrive('token', 'guest', [{ id: 'wallet-1', name: 'Personal' }], storage)
     assert.equal(saved.uploaded, 3)
+    assert.equal(saved.rootId, 'root')
     assert.deepEqual(saved.syncedReceipts, [{ id: 'receipt-1', revision }])
     assert.doesNotMatch(receiptMetadata, /driveSyncedRevision/)
     failImage = true

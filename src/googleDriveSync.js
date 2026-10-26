@@ -184,5 +184,5 @@ export async function syncToDrive(token, scope, wallets, storage = receiptStorag
       }
     }
   }
-  return { uploaded, syncedReceipts }
+  return { uploaded, syncedReceipts, rootId: root.id }
 }
