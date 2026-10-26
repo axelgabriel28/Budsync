@@ -4,21 +4,30 @@ const folderMime = 'application/vnd.google-apps.folder'
 const scope = 'https://www.googleapis.com/auth/drive.file'
 
 export const googleClientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID?.trim() || ''
+let identityScriptPromise
 
 export function loadGoogleIdentity() {
   if (window.google?.accounts?.oauth2) return Promise.resolve()
-  return new Promise((resolve, reject) => {
+  if (identityScriptPromise) return identityScriptPromise
+  identityScriptPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script')
     script.src = 'https://accounts.google.com/gsi/client'
     script.async = true
-    script.onload = resolve
+    script.onload = () => window.google?.accounts?.oauth2
+      ? resolve()
+      : reject(new Error('Google sign-in did not finish loading. Refresh Budsync and try again.'))
     script.onerror = () => reject(new Error('Google sign-in could not load. Check your connection.'))
     document.head.append(script)
+  }).catch((error) => {
+    identityScriptPromise = undefined
+    throw error
   })
+  return identityScriptPromise
 }
 
-export function connectGoogleDrive() {
+export async function connectGoogleDrive() {
   if (!googleClientId) return Promise.reject(new Error('Add VITE_GOOGLE_CLIENT_ID to .env.local and restart Vite.'))
+  await loadGoogleIdentity()
   if (!window.google?.accounts?.oauth2) return Promise.reject(new Error('Google sign-in is still loading. Try again.'))
   return new Promise((resolve, reject) => {
     const client = window.google.accounts.oauth2.initTokenClient({
