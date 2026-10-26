@@ -1,7 +1,7 @@
 const api = 'https://www.googleapis.com/drive/v3/files'
 const uploadApi = 'https://www.googleapis.com/upload/drive/v3/files'
 const folderMime = 'application/vnd.google-apps.folder'
-const scope = 'https://www.googleapis.com/auth/drive.file'
+const scope = 'openid email https://www.googleapis.com/auth/drive.file'
 
 export const googleClientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID?.trim() || ''
 let identityScriptPromise
@@ -25,16 +25,31 @@ export function loadGoogleIdentity() {
   return identityScriptPromise
 }
 
-export async function connectGoogleDrive() {
+export async function connectGoogleDrive(expectedEmail) {
   if (!googleClientId) return Promise.reject(new Error('Add VITE_GOOGLE_CLIENT_ID to .env.local and restart Vite.'))
+  if (!expectedEmail) return Promise.reject(new Error('Sign in to Budsync before connecting Google Drive. Drive must use the same account as your Budsync login.'))
   await loadGoogleIdentity()
   if (!window.google?.accounts?.oauth2) return Promise.reject(new Error('Google sign-in is still loading. Try again.'))
   return new Promise((resolve, reject) => {
     const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: googleClientId, scope,
-      callback: (result) => result.error ? reject(new Error(result.error_description || result.error)) : resolve({
-        token: result.access_token, expiresAt: Date.now() + Number(result.expires_in || 3600) * 1000,
-      }),
+      client_id: googleClientId, scope, login_hint: expectedEmail,
+      callback: async (result) => {
+        if (result.error) return reject(new Error(result.error_description || result.error))
+        try {
+          const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${result.access_token}` },
+          })
+          if (!response.ok) throw new Error('Google could not confirm the selected account. Try connecting again.')
+          const identity = await response.json()
+          if (!identity.email || !identity.email_verified) throw new Error('Google did not confirm an email address for this account.')
+          const email = identity.email.trim().toLowerCase()
+          if (email !== expectedEmail.trim().toLowerCase()) {
+            throw new Error(`Google Drive selected ${email}, but Budsync is signed in as ${expectedEmail}. No Drive data was synced. Reconnect and authorize ${expectedEmail}.`)
+          }
+          resolve({ token: result.access_token, email,
+            expiresAt: Date.now() + Number(result.expires_in || 3600) * 1000 })
+        } catch (error) { reject(error) }
+      },
       error_callback: (result) => reject(new Error(result.message || 'Google authorization was cancelled.')),
     })
     client.requestAccessToken()

@@ -785,10 +785,29 @@ function App() {
     setDriveBusy(true)
     setDriveStatus('Connecting to Google Drive…')
     try {
-      const authorization = await connectGoogleDrive()
-      const current = { ...authorization, scope: scopeRef.current }
-      driveSessionRef.current = current
-      setDriveSession(current)
+      const expectedEmail = session?.user?.email?.trim().toLowerCase()
+      const currentScope = scopeRef.current
+      if (!expectedEmail) throw new Error('Sign in to Budsync before connecting Google Drive. Drive must use the same account as your Budsync login.')
+      const authorization = await connectGoogleDrive(expectedEmail)
+      if (scopeRef.current !== currentScope || session?.user?.email?.trim().toLowerCase() !== expectedEmail) {
+        throw new Error('Your Budsync account changed during Google authorization. No Drive data was synced. Connect Google Drive again.')
+      }
+      await activateDriveAccount(authorization, currentScope, true)
+    } catch (cause) { setDriveUploadError(cause.message); setDriveStatus(`Google Drive connection failed: ${cause.message}`) }
+    finally {
+      driveLock.current = false
+      setDriveBusy(false)
+      if (drivePending.current) { drivePending.current = false; uploadReceipts() }
+    }
+  }
+
+  async function activateDriveAccount(authorization, currentScope, alreadyLocked = false) {
+    if (driveLock.current && !alreadyLocked) return
+    driveLock.current = true
+    setDriveBusy(true)
+    setDriveUploadError('')
+    try {
+      const current = { ...authorization, scope: currentScope }
       setDriveStatus('Connected. Checking Drive for receipt changes…')
       const restored = await pullDriveReceipts(current)
       const uploaded = await syncToDrive(current.token, current.scope, workspaceRef.current.data.wallets)
@@ -797,7 +816,10 @@ function App() {
       setDriveSession({ ...current })
       await recordDriveSync(current, uploaded)
       setDriveStatus(`Connected. Updated ${restored.folders} folders and ${restored.receipts} receipts; uploaded ${uploaded.uploaded} files.${restored.skipped ? ` ${restored.skipped} items need matching wallets.` : ''}`)
-    } catch (cause) { setDriveUploadError(cause.message); setDriveStatus(`Google Drive connection failed: ${cause.message}`) }
+    } catch (cause) {
+      setDriveUploadError(cause.message)
+      setDriveStatus(`Google Drive connection failed: ${cause.message}`)
+    }
     finally {
       driveLock.current = false
       setDriveBusy(false)
@@ -910,7 +932,7 @@ function App() {
               </form>
             </> : <p>Account access needs the Firebase web app values in <code>.env.local</code>.</p>}
           </>}</section>
-          <section className="data-card"><h2>Google Drive receipts</h2><p>Connect a Google account to upload and restore receipt folders and images. Budsync creates <code>Budsync / wallet name / folder name / files</code> in Drive. Deleted local receipts and folders move to Drive Trash on the next sync. Your local copy remains available while disconnected.</p>{googleClientId ? <div className="button-row"><button className="primary" type="button" disabled={driveBusy || !isOnline} onClick={connectDrive}>{driveSession ? 'Reconnect Google Drive' : 'Connect Google Drive'}</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={uploadReceipts}>Sync receipts now</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={restoreDrive}>Download Drive changes</button>{driveFolderUrl && <a className="drive-folder-link" href={driveFolderUrl} target="_blank" rel="noopener noreferrer">Open Budsync folder <span aria-hidden="true">↗</span></a>}</div> : <p>Google Drive uploads are not set up for this site. Add a Google OAuth Web client ID as <code>VITE_GOOGLE_CLIENT_ID</code>, then rebuild and deploy the app. Images saved now stay on this device. The README has setup steps.</p>}{driveStatus && <p className="sync-state" role="status">{driveStatus}</p>}</section>
+          <section className="data-card"><h2>Google Drive receipts</h2><p>Connect Google Drive with the same email you use to sign in to Budsync. Google will use your Budsync email automatically. If Google authorizes another account, Budsync blocks the connection before any receipts are restored or uploaded. Budsync creates <code>Budsync / wallet name / folder name / files</code> in Drive. Deleted local receipts and folders move to Drive Trash on the next sync. Your local copy remains available while disconnected.</p>{googleClientId ? <div className="button-row"><button className="primary" type="button" disabled={driveBusy || !isOnline} onClick={connectDrive}>{driveSession ? 'Reconnect Google Drive' : 'Connect Google Drive'}</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={uploadReceipts}>Sync receipts now</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={restoreDrive}>Download Drive changes</button>{driveFolderUrl && <a className="drive-folder-link" href={driveFolderUrl} target="_blank" rel="noopener noreferrer">Open Budsync folder <span aria-hidden="true">↗</span></a>}</div> : <p>Google Drive uploads are not set up for this site. Add a Google OAuth Web client ID as <code>VITE_GOOGLE_CLIENT_ID</code>, then rebuild and deploy the app. Images saved now stay on this device. The README has setup steps.</p>}{driveStatus && <p className="sync-state" role={driveUploadError ? 'alert' : 'status'}>{driveStatus}</p>}</section>
           </>}
           {settingsSection === 'data' && <>
           <section className="data-card settings-card"><div className="settings-card-heading"><span className="settings-icon"><NavIcon name="receipts" size={19} /></span><div><h2>Your data</h2><p>{session ? 'Your account workspace is saved on this device and syncs with your account when online.' : 'Your guest workspace is saved in this browser on this device.'} Receipt images are stored separately on this device unless Google Drive sync is connected.</p></div></div></section>
