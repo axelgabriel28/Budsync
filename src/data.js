@@ -9,7 +9,7 @@ export const starterWallets = [
 
 export const blankData = () => ({
   version: 2, wallets: starterWallets.map((wallet) => ({ ...wallet, openingBalance: 0 })),
-  entries: [], budgets: [], goals: [], sampleBalances: false, setupComplete: false, receiptSyncCutoff: null,
+  entries: [], budgets: [], goals: [], sampleBalances: false, setupComplete: false, introComplete: false, receiptSyncCutoff: null,
 })
 
 const validMoney = (amount, allowZero = false) => Number.isFinite(amount)
@@ -120,6 +120,7 @@ export function validateData(input) {
   if (budgets.length > 100 || goals.length > 100) throw new Error('The backup has too many budgets or savings goals.')
   return { version: 2, wallets, entries, budgets, goals,
     sampleBalances: Boolean(input.sampleBalances), setupComplete: input.setupComplete !== false,
+    introComplete: input.introComplete !== false,
     receiptSyncCutoff: typeof input.receiptSyncCutoff === 'string' ? input.receiptSyncCutoff : null }
 }
 
