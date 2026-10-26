@@ -814,7 +814,7 @@ function App() {
 
   if (loading) return <div className="loading-screen" role="status">Loading your Budsync records…</div>
 
-  if (!data.setupComplete && saveAllowed) return <div className="setup-screen"><section className="setup-card"><span className="widget-kicker">WELCOME TO BUDSYNC</span><h1>Set up your wallets</h1><p>Choose how the four starter wallets should begin. You can edit their opening balances later. This choice does not add any transactions.</p><div className="setup-options"><button type="button" onClick={() => editData((current) => ({ ...current, setupComplete: true, sampleBalances: false }))}><strong>Start at ₱0</strong><span>Use your real opening balances when you are ready.</span></button><button type="button" onClick={() => editData((current) => ({ ...current, wallets: starterWallets.map((wallet) => ({ ...wallet })), setupComplete: true, sampleBalances: true }))}><strong>Explore with sample balances</strong><span>Try Personal ₱1,000, Organization ₱500, and Savings ₱300.</span></button></div></section></div>
+  if (!data.setupComplete && saveAllowed) return <div className="setup-screen"><section className="setup-card"><span className="widget-kicker">WELCOME TO BUDSYNC</span><h1>Set up your wallets</h1><p>Choose how the four starter wallets should begin. You can edit their opening balances later. This choice does not add any transactions.</p><div className="setup-options"><button type="button" onClick={() => editData((current) => ({ ...current, setupComplete: true, sampleBalances: false }))}><strong>Start at ₱0</strong><span>Use your real opening balances when you are ready.</span></button><button type="button" onClick={() => editData((current) => ({ ...current, wallets: starterWallets.map((wallet) => ({ ...wallet })), setupComplete: true, sampleBalances: true }))}><strong>Explore with sample balances</strong><span>Try Personal ₱1,000, Organization ₱500, and Savings ₱300.</span></button></div></section><PolicyLinks /></div>
 
   return <div className={'app' + (sidebarCollapsed ? ' sidebar-compact' : '')}>
     <a className="skip-link" href="#main-content">Skip to content</a>
@@ -916,6 +916,7 @@ function App() {
             {conflict && <div className="restore-review" role="alert"><strong>Choose which copy to keep</strong><span>On this device: {data.wallets.length} wallets · {data.entries.length} transactions<br />In your account: {conflict.data.wallets.length} wallets · {conflict.data.entries.length} transactions</span><ul className="conflict-list">{changedRecords(data, conflict.data).slice(0, 12).map((change, index) => <li key={index}>{change}</li>)}</ul><p>Download a backup of this device before choosing the account copy. Choosing this device will replace the newer account copy.</p><div className="button-row"><button className="secondary" type="button" onClick={() => resolveConflict('cloud')}>Use account copy</button><button className="primary" type="button" onClick={() => resolveConflict('device')}>Upload this device copy</button></div></div>}
           </section>}
         </div>}
+        <PolicyLinks />
       </main>
     </div>
 
@@ -939,6 +940,10 @@ function IntroTour({ step, onStep, onFinish }) {
   ]
   const current = pages[step]
   return <div className="intro-backdrop"><section className="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title" aria-describedby="intro-description"><button className="intro-skip" type="button" onClick={onFinish} autoFocus>Skip intro</button><span className="intro-kicker">{current.kicker} <span>· {step + 1} OF {pages.length}</span></span><div className="intro-icon" aria-hidden="true">{current.icon}</div><h2 id="intro-title">{current.title}</h2><p id="intro-description">{current.body}</p><div className="intro-dots" aria-label={`Step ${step + 1} of ${pages.length}`}>{pages.map((page, index) => <span key={page.title} className={index === step ? 'active' : ''} />)}</div><div className="intro-actions">{step > 0 && <button className="secondary" type="button" onClick={() => onStep(step - 1)}>Back</button>}<button className="primary" type="button" onClick={() => step === pages.length - 1 ? onFinish() : onStep(step + 1)}>{step === pages.length - 1 ? 'Start using Budsync' : 'Next'}</button></div></section></div>
+}
+
+function PolicyLinks() {
+  return <footer className="policy-links"><span>Budsync is a personal finance tracker. It does not connect to banks.</span><nav aria-label="Legal"><a href="/privacy.html">Privacy policy</a><a href="/terms.html">Terms of service</a></nav></footer>
 }
 
 function Metric({ label, value, detail, tone, icon }) {

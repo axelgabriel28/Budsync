@@ -496,3 +496,8 @@ button:active svg { transform: scale(.9); }
   .settings-tabs { display: grid; grid-template-columns: 1fr; }
   .settings-choice-group { grid-template-columns: 1fr; }
 }
+.policy-links { display: flex; align-items: center; justify-content: space-between; gap: 12px 22px; flex-wrap: wrap; margin: 42px 0 0; padding: 18px 2px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.policy-links nav { display: flex; gap: 18px; }
+.policy-links a { color: var(--ink); text-underline-offset: 3px; }
+.setup-screen .policy-links { width: min(100%, 540px); margin: 22px auto 0; }
+@media (max-width: 520px) { .policy-links { align-items: flex-start; flex-direction: column; } }
