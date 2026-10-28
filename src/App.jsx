@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { House, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Building2, Wallet, PiggyBank, Smartphone, ReceiptText, ChartNoAxesColumnIncreasing, Settings2, SlidersHorizontal, Calculator, Plus, Sun, Moon, Search } from 'lucide-react'
 import { backupJson, parseBackup, starterWallets, transactionsCsv } from './data.js'
 import { entryImpact, monthlyReport, previewEntryBalances, walletBalances } from './finance.js'
 import { freshWorkspace, readPreviousAccountWorkspace, readWorkspace, workspaceKey, writeWorkspace } from './localStore.js'
@@ -13,6 +14,7 @@ import { connectGoogleDrive, googleClientId, loadGoogleIdentity } from './google
 import { restoreFromDrive, syncToDrive } from './googleDriveSync.js'
 import './App.css'
 import './Fluid.css'
+import './Concept.css'
 
 const navigation = [
   ['overview', 'Overview'],
@@ -22,6 +24,20 @@ const navigation = [
   ['reports', 'Insights'],
   ['account', 'Settings'],
 ]
+const sidebarIcons = {
+  overview: House,
+  transactions: ArrowLeftRight,
+  wallets: Wallet,
+  receipts: ReceiptText,
+  reports: ChartNoAxesColumnIncreasing,
+  account: Settings2,
+}
+const walletIcons = {
+  personal: Wallet,
+  organization: Building2,
+  savings: PiggyBank,
+  ewallet: Smartphone,
+}
 const categories = {
   income: ['Salary', 'Business', 'Gift', 'Interest', 'Other income'],
   expense: ['Food', 'Transport', 'Bills', 'Shopping', 'Health', 'Education', 'Other expense'],
@@ -884,17 +900,17 @@ function App() {
     <a className="skip-link" href="#main-content">Skip to content</a>
     <aside className="sidebar">
       <div className="sidebar-top"><button className="brand" type="button" aria-label="Budsync home" onClick={() => setPage('overview')}><img className="brand-logo brand-logo-light" src={`${import.meta.env.BASE_URL}budsync-logo-light.png`} alt="Budsync" /><img className="brand-logo brand-logo-dark" src={`${import.meta.env.BASE_URL}budsync-logo-dark.png`} alt="Budsync" /></button><button className="collapse-button" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={() => setSidebarCollapsed(!sidebarCollapsed)}><NavIcon name="menu" size={19} /></button></div>
-      <div className="mobile-header-actions"><button type="button" aria-label="Insights" onClick={() => setPage('reports')}><NavIcon name="reports" /></button><button type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><NavIcon name={theme === 'dark' ? 'sun' : 'moon'} /></button><button type="button" aria-label="Settings" onClick={() => setPage('account')}><NavIcon name="account" /></button></div>
+      <div className="mobile-header-actions"><button type="button" aria-label="Insights" onClick={() => setPage('reports')}><NavIcon name="reports" /></button><button type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun size={20} strokeWidth={1.9} aria-hidden="true" /> : <Moon size={20} strokeWidth={1.9} aria-hidden="true" />}</button><button type="button" aria-label="Settings" onClick={() => setPage('account')}><NavIcon name="account" /></button></div>
       <div className="side-content">
         <p className="nav-label">WORKSPACE</p>
-        <nav aria-label="Desktop navigation">{navigation.map(([id, label]) => <button type="button" key={id} title={label} aria-current={page === id ? 'page' : undefined} className={page === id ? 'active' : ''} onClick={() => setPage(id)}><span className="nav-icon"><NavIcon name={id} /></span><span className="nav-text">{label}</span></button>)}</nav>
+        <nav aria-label="Desktop navigation">{navigation.map(([id, label]) => { const Icon = sidebarIcons[id]; return <button type="button" key={id} title={label} aria-current={page === id ? 'page' : undefined} className={page === id ? 'active' : ''} onClick={() => setPage(id)}><span className="nav-icon"><Icon size={20} strokeWidth={1.9} aria-hidden="true" /></span><span className="nav-text">{label}</span></button> })}</nav>
         <p className="nav-label wallets-label">YOUR WALLETS</p>
         <div className="side-wallets">{activeWallets.map((wallet) => <button type="button" key={wallet.id} onClick={() => showWallet(wallet.id)}><span className={'mini-wallet ' + wallet.color}>{wallet.name[0]}</span>{wallet.name}</button>)}</div>
       </div>
       <div className="side-bottom"><span className="side-status-dot" /><div><strong>{syncStatus}</strong><small>{session ? 'Your account workspace' : 'Guest workspace'}</small></div></div>
     </aside>
     <div className="main">
-      <header className="topbar"><div className="breadcrumb">Workspace <span>›</span> <strong>{navigation.find(([id]) => id === page)?.[1]}</strong></div><div className="top-right"><span className={'status' + (syncError || storageError ? ' status-error' : workspace.dirty ? ' status-pending' : '')} role="status"><i /> {syncStatus}</span><button className="top-icon-button" type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><NavIcon name={theme === 'dark' ? 'sun' : 'moon'} size={18} /></button><button className="avatar" type="button" aria-label="Settings" onClick={() => setPage('account')}>B</button></div></header>
+      <header className="topbar"><div className="breadcrumb">Workspace <span>›</span> <strong>{navigation.find(([id]) => id === page)?.[1]}</strong></div><label className="top-search"><Search size={17} strokeWidth={1.8} aria-hidden="true" /><input type="search" aria-label="Search transactions" placeholder="Search transactions…" value={search} onChange={(event) => { setSearch(event.target.value); setPage('transactions') }} /></label><div className="top-right"><span className={'status' + (syncError || storageError ? ' status-error' : workspace.dirty ? ' status-pending' : '')} role="status"><i /> {syncStatus}</span><button className="top-icon-button" type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun size={18} strokeWidth={1.9} aria-hidden="true" /> : <Moon size={18} strokeWidth={1.9} aria-hidden="true" />}</button><button className="avatar" type="button" aria-label="Settings" onClick={() => setPage('account')}>B</button></div></header>
       <main id="main-content" className="content" key={page}>
         <div className={'mobile-sync-pill' + (syncError || storageError ? ' status-error' : workspace.dirty ? ' status-pending' : '')} role="status"><i /> {syncStatus}</div>
         {!saveAllowed && <div className="error-banner" role="alert">Saved data could not be read. It has not been replaced. Restore a backup in Settings, or <button type="button" onClick={() => { setSaveAllowed(true); setNotice('Started with sample data.') }}>start fresh</button>.</div>}
@@ -906,13 +922,13 @@ function App() {
         {page === 'overview' && <>
           {data.sampleBalances && data.entries.length === 0 && <section className="welcome-card" aria-labelledby="welcome-title"><div><span className="widget-kicker">WELCOME TO BUDSYNC</span><h2 id="welcome-title">Your money, in a clearer view.</h2><p>Explore with the plan’s sample opening balances, start with zero, or bring in an existing account or backup. {session ? 'Changes save on this device and sync when online.' : 'Guest entries stay on this device until you choose to sign in and copy them.'}</p><div className="button-row"><button type="button" className="primary" onClick={clearSamples}>Start fresh at ₱0</button><button type="button" className="secondary" onClick={() => { setSettingsSection('data'); setPage('account') }}>Restore existing data</button></div></div><div className="welcome-art" aria-hidden="true"><i /><i /><i /></div></section>}
           <div className="page-head"><div><div className="eyebrow">YOUR FINANCIAL SPACE</div><h1>Good to see you.</h1><p>A clear picture of your money, all in one place.</p></div></div>
-          <section className="balance-hero" aria-label="Combined wallet balance"><div className="hero-main"><div className="hero-label">TOTAL BALANCE <span>Across {data.wallets.length} wallets</span></div><div className="hero-amount"><strong key={balanceHidden ? 'hidden' : combined}>{balanceHidden ? '₱ ••••••' : php(combined)}</strong><button type="button" aria-label={balanceHidden ? 'Show balance' : 'Hide balance'} onClick={() => setBalanceHidden(!balanceHidden)}><NavIcon name={balanceHidden ? 'eyeOff' : 'eye'} size={19} /></button></div><p>Opening balances plus recorded activity. Adjustments are excluded from monthly net.</p><button className="hero-action" type="button" onClick={() => openEntry()}><NavIcon name="plus" size={16} /> Add transaction</button></div><div className="hero-side"><span>{monthLabel.toUpperCase()}</span><strong>{balanceHidden ? '₱ ••••••' : php(currentReport.net)}</strong><small>Net income after expenses</small></div></section>
-          <div className="metrics"><Metric label="Income this month" value={balanceHidden ? '₱ ••••••' : php(currentReport.income)} detail={monthComparison(currentReport.income, previousReport.income)} tone="green" icon="↓" /><Metric label="Expenses this month" value={balanceHidden ? '₱ ••••••' : php(currentReport.expenses)} detail={monthComparison(currentReport.expenses, previousReport.expenses)} tone="coral" icon="↑" /></div>
-          <div className="dashboard-grid"><CashFlowChart items={cashFlow} range={chartRange} onRange={setChartRange} hidden={balanceHidden} /><SpendingPanel report={currentReport} budgets={data.budgets || []} hidden={balanceHidden} /></div>
+          <div className="overview-summary"><section className="balance-hero" aria-label="Combined wallet balance"><div className="hero-main"><div className="hero-label">TOTAL BALANCE <span>Across {data.wallets.length} wallets</span></div><div className="hero-amount"><strong key={balanceHidden ? 'hidden' : combined}>{balanceHidden ? '₱ ••••••' : php(combined)}</strong><button type="button" aria-label={balanceHidden ? 'Show balance' : 'Hide balance'} onClick={() => setBalanceHidden(!balanceHidden)}><NavIcon name={balanceHidden ? 'eyeOff' : 'eye'} size={19} /></button></div><p>Opening balances plus recorded activity. Adjustments are excluded from monthly net.</p><button className="hero-action" type="button" onClick={() => openEntry()}><NavIcon name="plus" size={16} /> Add transaction</button></div><div className="hero-side"><span>{monthLabel.toUpperCase()}</span><strong>{balanceHidden ? '₱ ••••••' : php(currentReport.net)}</strong><small>Net income after expenses</small></div></section>
+          <div className="metrics"><Metric label="Income this month" value={balanceHidden ? '₱ ••••••' : php(currentReport.income)} detail={monthComparison(currentReport.income, previousReport.income)} tone="green" icon={ArrowDownLeft} /><Metric label="Expenses this month" value={balanceHidden ? '₱ ••••••' : php(currentReport.expenses)} detail={monthComparison(currentReport.expenses, previousReport.expenses)} tone="coral" icon={ArrowUpRight} /></div></div>
           <SectionHeading title="Your wallets" subtitle="Balances across the places you keep money." action="Manage wallets" onAction={() => setPage('wallets')} />
-          <div className="wallet-grid">{activeWallets.map((wallet) => <WalletCard key={wallet.id} wallet={wallet} balance={balances[wallet.id]} hidden={balanceHidden} recent={sorted.find((entry) => [entry.walletId, entry.fromWalletId, entry.toWalletId].includes(wallet.id))} onShow={() => showWallet(wallet.id)} onTransfer={activeWallets.length > 1 ? () => openTransfer(wallet) : undefined} />)}</div>
-          <SectionHeading title="Recent activity" subtitle="Your latest recorded transactions." action="See all activity" onAction={() => setPage('transactions')} />
-          <div className="panel">{sorted.length ? sorted.slice(0, 5).map((entry) => <TransactionRow key={entry.id} entry={entry} walletName={walletName} hidden={balanceHidden} onEdit={() => openEntry(entry.type, entry)} onDelete={() => deleteEntry(entry.id)} />) : <EmptyState onAdd={() => openEntry()} />}</div>
+          <div className="wallet-grid overview-wallet-grid">{activeWallets.map((wallet) => <WalletCard key={wallet.id} wallet={wallet} balance={balances[wallet.id]} hidden={balanceHidden} recent={sorted.find((entry) => [entry.walletId, entry.fromWalletId, entry.toWalletId].includes(wallet.id))} onShow={() => showWallet(wallet.id)} onTransfer={activeWallets.length > 1 ? () => openTransfer(wallet) : undefined} />)}</div>
+          <div className="overview-activity-grid"><section className="overview-recent panel"><SectionHeading title="Recent activity" subtitle="Your latest recorded transactions." action="See all activity" onAction={() => setPage('transactions')} />
+          <div>{sorted.length ? sorted.slice(0, 5).map((entry) => <TransactionRow key={entry.id} entry={entry} walletName={walletName} hidden={balanceHidden} onEdit={() => openEntry(entry.type, entry)} onDelete={() => deleteEntry(entry.id)} />) : <EmptyState onAdd={() => openEntry()} />}</div></section>
+          <div className="overview-analytics"><CashFlowChart items={cashFlow} range={chartRange} onRange={setChartRange} hidden={balanceHidden} /><SpendingPanel report={currentReport} budgets={data.budgets || []} hidden={balanceHidden} /></div></div>
         </>}
 
         {page === 'transactions' && <>
@@ -976,9 +992,9 @@ function App() {
     </div>
 
     <nav className="mobile-dock" aria-label="Mobile navigation">
-      {[['overview', 'Home'], ['wallets', 'Wallets']].map(([id, label]) => <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><NavIcon name={id} /><span>{label}</span></button>)}
-      <button className="dock-add" type="button" aria-label="Add transaction" onClick={() => openEntry()}><NavIcon name="plus" size={26} /><span>Add</span></button>
-      {[['transactions', 'Activity'], ['receipts', 'Receipts']].map(([id, label]) => <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><NavIcon name={id} /><span>{label}</span></button>)}
+      {[['overview', 'Home'], ['wallets', 'Wallets']].map(([id, label]) => { const Icon = sidebarIcons[id]; return <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><Icon size={21} strokeWidth={1.9} aria-hidden="true" /><span>{label}</span></button> })}
+      <button className="dock-add" type="button" aria-label="Add transaction" onClick={() => openEntry()}><Plus size={24} strokeWidth={2} aria-hidden="true" /><span>Add</span></button>
+      {[['transactions', 'Activity'], ['receipts', 'Receipts']].map(([id, label]) => { const Icon = sidebarIcons[id]; return <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><Icon size={21} strokeWidth={1.9} aria-hidden="true" /><span>{label}</span></button> })}
     </nav>
 
     {modal?.kind === 'entry' && <EntryModal form={form} setForm={setForm} error={error} setError={setError} modal={modal} wallets={data.wallets} balances={balances} previous={data.entries.find((entry) => entry.id === modal.id)} hidden={balanceHidden} categoryOptions={categoryOptions} onClose={() => setModal(null)} onSave={saveEntry} />}
@@ -1002,7 +1018,8 @@ function PolicyLinks() {
 }
 
 function Metric({ label, value, detail, tone, icon }) {
-  return <div className="metric"><span className={'metric-icon ' + tone}>{icon}</span><div><small>{label}</small><strong>{value}</strong><small>{detail}</small></div></div>
+  const Icon = icon
+  return <div className="metric"><span className={'metric-icon ' + tone}><Icon size={21} strokeWidth={1.9} aria-hidden="true" /></span><div><small>{label}</small><strong>{value}</strong><small>{detail}</small></div></div>
 }
 
 function CashFlowChart({ items, range, onRange, hidden }) {
@@ -1023,6 +1040,8 @@ function BudgetProgress({ budget, report, hidden = false }) {
 }
 
 function NavIcon({ name, size = 20 }) {
+  if (name === 'sun') return <Sun size={size} strokeWidth={1.9} aria-hidden="true" />
+  if (name === 'moon') return <Moon size={size} strokeWidth={1.9} aria-hidden="true" />
   const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true }
   const paths = {
     overview: <><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /><path d="M9 21v-7h6v7" /></>,
@@ -1053,13 +1072,15 @@ function SectionHeading({ title, subtitle, action, onAction }) {
 
 function WalletCard({ wallet, balance, summary, detailed, hidden, recent, onShow, onTransfer, onEdit, onArchive }) {
   const activity = (summary?.income || 0) + (summary?.expenses || 0)
-  return <div className={'wallet-card wallet-' + wallet.color}><div className="wallet-card-top"><span className={'wallet-icon ' + wallet.color}>{wallet.name[0]}</span><span className="wallet-type">{wallet.type}{wallet.archived ? ' · Archived' : ''}</span></div><h3>{wallet.name}</h3><span className="wallet-balance-label">Available balance</span><strong>{shownMoney(balance, hidden)}</strong>{recent && !detailed && <p className="wallet-recent">Recent: {entryName(recent)}</p>}{detailed && <><div className="opening"><span>Opening balance</span><b>{shownMoney(wallet.openingBalance, hidden)}</b></div><div className="wallet-flow"><span>This month · Income {shownMoney(summary?.income || 0, hidden)}</span><span>Expenses {shownMoney(summary?.expenses || 0, hidden)}</span>{activity > 0 && <div className="wallet-flow-track" aria-label={hidden ? 'Income and expense proportions' : `Income ${php(summary.income)}, expenses ${php(summary.expenses)}`}><i style={{ width: `${summary.income / activity * 100}%` }} /><i style={{ width: `${summary.expenses / activity * 100}%` }} /></div>}</div></>}<div className="wallet-actions">{onShow && <button type="button" onClick={onShow}>View activity <span aria-hidden="true">↗</span></button>}{onTransfer && !wallet.archived && <button type="button" onClick={onTransfer}>Transfer</button>}{detailed && <><button type="button" onClick={onEdit}>Edit</button><button type="button" onClick={onArchive}>{wallet.archived ? 'Restore' : 'Archive'}</button></>}</div></div>
+  const Icon = walletIcons[wallet.id] || Wallet
+  return <div className={'wallet-card wallet-' + wallet.color}><div className="wallet-card-top"><span className={'wallet-icon ' + wallet.color}><Icon size={22} strokeWidth={1.9} aria-hidden="true" /></span><span className="wallet-type">{wallet.type}{wallet.archived ? ' · Archived' : ''}</span></div><h3>{wallet.name}</h3><span className="wallet-balance-label">Available balance</span><strong>{shownMoney(balance, hidden)}</strong>{recent && !detailed && <p className="wallet-recent">Recent: {entryName(recent)}</p>}{detailed && <><div className="opening"><span>Opening balance</span><b>{shownMoney(wallet.openingBalance, hidden)}</b></div><div className="wallet-flow"><span>This month · Income {shownMoney(summary?.income || 0, hidden)}</span><span>Expenses {shownMoney(summary?.expenses || 0, hidden)}</span>{activity > 0 && <div className="wallet-flow-track" aria-label={hidden ? 'Income and expense proportions' : `Income ${php(summary.income)}, expenses ${php(summary.expenses)}`}><i style={{ width: `${summary.income / activity * 100}%` }} /><i style={{ width: `${summary.expenses / activity * 100}%` }} /></div>}</div></>}<div className="wallet-actions">{onShow && <button type="button" onClick={onShow}>View activity <span aria-hidden="true">↗</span></button>}{onTransfer && !wallet.archived && <button type="button" onClick={onTransfer}>Transfer</button>}{detailed && <><button type="button" onClick={onEdit}>Edit</button><button type="button" onClick={onArchive}>{wallet.archived ? 'Restore' : 'Archive'}</button></>}</div></div>
 }
 
 function TransactionRow({ entry, walletName, onEdit, onDelete, onRestore, deleted = false, walletFilter = 'all', hidden = false }) {
   const sign = walletFilter === 'all' ? (entry.type === 'expense' || (entry.type === 'adjustment' && entry.adjustmentEffect === 'decrease') ? -1 : 1) : Math.sign(entryImpact({ ...entry, deletedAt: null }, walletFilter))
   const subtitle = entry.type === 'transfer' ? walletName(entry.fromWalletId) + ' → ' + walletName(entry.toWalletId) : walletName(entry.walletId)
-  return <div className="transaction"><span className={'transaction-icon ' + (entry.type === 'income' ? 'green' : entry.type === 'expense' ? 'coral' : entry.type === 'transfer' ? 'blue' : 'purple')}>{entry.type === 'transfer' ? '⇄' : entry.type === 'adjustment' ? '±' : sign < 0 ? '↑' : '↓'}</span><div className="transaction-info"><strong>{entryName(entry)}</strong><span>{subtitle} · {dateLabel(entry.date)}</span>{entry.note && <small>{entry.note}</small>}{entry.updatedAt && <small className="edit-note">Edited {new Date(entry.updatedAt).toLocaleString('en-PH')} · {entry.editNote}</small>}{(entry.editHistory?.length || 0) > 1 && <small className="edit-note">{entry.editHistory.length} recorded edits</small>}</div><div className="transaction-amount"><strong className={entry.type === 'transfer' && walletFilter === 'all' ? '' : sign < 0 ? 'negative' : 'positive'}>{hidden ? '₱ ••••••' : `${entry.type === 'transfer' && walletFilter === 'all' ? '' : sign < 0 ? '−' : '+'}${php(entry.amount)}`}</strong><span>{entry.type === 'transfer' && walletFilter === 'all' ? 'Between wallets' : entry.type}</span></div><div className="row-actions">{deleted ? <button type="button" onClick={onRestore}>Restore</button> : <><button type="button" onClick={onEdit}>Edit</button><button type="button" onClick={onDelete}>Delete</button></>}</div></div>
+  const Icon = entry.type === 'transfer' ? ArrowLeftRight : entry.type === 'adjustment' ? SlidersHorizontal : sign < 0 ? ArrowUpRight : ArrowDownLeft
+  return <div className="transaction"><span className={'transaction-icon ' + (entry.type === 'income' ? 'green' : entry.type === 'expense' ? 'coral' : entry.type === 'transfer' ? 'blue' : 'purple')}><Icon size={20} strokeWidth={1.9} aria-hidden="true" /></span><div className="transaction-info"><strong>{entryName(entry)}</strong><span>{subtitle} · {dateLabel(entry.date)}</span>{entry.note && <small>{entry.note}</small>}{entry.updatedAt && <small className="edit-note">Edited {new Date(entry.updatedAt).toLocaleString('en-PH')} · {entry.editNote}</small>}{(entry.editHistory?.length || 0) > 1 && <small className="edit-note">{entry.editHistory.length} recorded edits</small>}</div><div className="transaction-amount"><strong className={entry.type === 'transfer' && walletFilter === 'all' ? '' : sign < 0 ? 'negative' : 'positive'}>{hidden ? '₱ ••••••' : `${entry.type === 'transfer' && walletFilter === 'all' ? '' : sign < 0 ? '−' : '+'}${php(entry.amount)}`}</strong><span>{entry.type === 'transfer' && walletFilter === 'all' ? 'Between wallets' : entry.type}</span></div><div className="row-actions">{deleted ? <button type="button" onClick={onRestore}>Restore</button> : <><button type="button" onClick={onEdit}>Edit</button><button type="button" onClick={onDelete}>Delete</button></>}</div></div>
 }
 
 function EmptyState({ filtered, onAdd }) {
@@ -1069,7 +1090,7 @@ function EmptyState({ filtered, onAdd }) {
 function Reports({ report, month, onMonth, budgets, goals, wallets, balances, hidden, categoryOptions, onAddBudget, onRemoveBudget, onAddGoal, onRemoveGoal }) {
   return <>
     <div className="page-head"><div><div className="eyebrow">YOUR MONEY IN MOTION</div><h1>Insights</h1><p>Understand spending and track the plans you set.</p></div><label className="report-month">Month<input type="month" value={month} onChange={(event) => onMonth(event.target.value || localDate().slice(0, 7))} /></label></div>
-    <div className="report-summary"><Metric label="Income" value={shownMoney(report.income, hidden)} detail="Transfers excluded" tone="green" icon="↓" /><Metric label="Expenses" value={shownMoney(report.expenses, hidden)} detail="Transfers excluded" tone="coral" icon="↑" /><Metric label="Net activity" value={shownMoney(report.net, hidden)} detail="Income less expenses" tone="blue" icon="±" /></div>
+    <div className="report-summary"><Metric label="Income" value={shownMoney(report.income, hidden)} detail="Transfers excluded" tone="green" icon={ArrowDownLeft} /><Metric label="Expenses" value={shownMoney(report.expenses, hidden)} detail="Transfers excluded" tone="coral" icon={ArrowUpRight} /><Metric label="Net activity" value={shownMoney(report.net, hidden)} detail="Income less expenses" tone="blue" icon={Calculator} /></div>
     <p className="report-note">Transfers and balance adjustments are excluded from income, expenses, and net activity.</p>
     <div className="report-grid"><section className="data-card"><h2>Expenses by category</h2>{report.categories.length ? report.categories.map(([name, amount]) => <div className="report-row" key={name}><span>{name}</span><strong>{shownMoney(amount, hidden)}</strong><div className="report-track"><i style={{ width: (amount / report.expenses * 100) + '%' }} /></div></div>) : <p>No expenses recorded for this month.</p>}</section><section className="data-card"><h2>By wallet</h2>{report.byWallet.map((item) => <div className="report-wallet-row" key={item.id}><strong>{item.name}</strong><span>Income {shownMoney(item.income, hidden)} · Expenses {shownMoney(item.expenses, hidden)}</span></div>)}</section></div>
     <PlanningPanel report={report} budgets={budgets} goals={goals} wallets={wallets} balances={balances} hidden={hidden} categoryOptions={categoryOptions} onAddBudget={onAddBudget} onRemoveBudget={onRemoveBudget} onAddGoal={onAddGoal} onRemoveGoal={onRemoveGoal} />
