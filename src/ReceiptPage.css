@@ -70,3 +70,50 @@
 .receipt-fields { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 @media (max-width: 900px) { .receipt-layout { grid-template-columns: 1fr; }.receipt-folders, .receipt-records { padding: 18px; } }
 @media (max-width: 600px) { .receipt-drive-panel { align-items: flex-start; flex-direction: column; }.receipt-summary { grid-template-columns: 1fr 1fr; }.receipt-records .receipt-panel-head, .receipt-add-row { flex-direction: column; }.receipt-folder-list { display: flex; overflow-x: auto; margin: 12px 0 0; padding-bottom: 4px; scroll-snap-type: x proximity; }.receipt-folder-list button { flex: 0 0 min(70vw, 210px); scroll-snap-align: start; }.receipt-fields, .receipt-crop-controls { grid-template-columns: 1fr; }.receipt-modal { max-height: 92dvh; }.receipt-scan-body { padding: 0 18px 24px; } }
+
+/* Structured procurement workspace */
+.receipt-drive-panel {
+  border-radius: 11px;
+  border-left: 4px solid var(--emerald);
+  box-shadow: var(--shadow);
+}
+.receipt-layout { gap: 14px; }
+.receipt-folders, .receipt-records { border-radius: 13px; }
+.receipt-panel-head h2, .receipt-add-row h3,
+.receipt-folder-form h3, .receipt-detail-form h3 {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+  letter-spacing: -.025em;
+}
+.receipt-folder-list button {
+  border-radius: 8px;
+  background: var(--surface);
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.receipt-folder-list button:hover { border-color: var(--quiet); }
+.receipt-folder-list button.selected {
+  border-color: var(--ink);
+  background: var(--surface-soft);
+  box-shadow: inset 3px 0 0 var(--ink);
+}
+.receipt-summary > div { border-radius: 9px; background: var(--surface-soft); }
+.receipt-summary small { font-family: 'DM Sans', 'Segoe UI', sans-serif; letter-spacing: .06em; }
+.receipt-summary strong { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; letter-spacing: -.035em; }
+.receipt-items { border-top: 1px solid var(--line); }
+.receipt-item {
+  padding: 15px 10px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  transition: background 150ms ease;
+}
+.receipt-item:hover { background: var(--surface-soft); }
+.receipt-item img, .receipt-no-image { border-radius: 6px; }
+.receipt-item-amount { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
+.receipt-item-actions button { text-decoration: none; color: var(--muted); }
+.receipt-item-actions button:hover { color: var(--ink); text-decoration: underline; }
+.receipt-adjustments, .receipt-comparison, .receipt-line-items, .receipt-duplicate { border-radius: 8px; }
+.receipt-preview { border-radius: 9px; }
+.drive-folder-link { border-radius: 8px; }
+@media (max-width: 600px) {
+  .receipt-drive-panel { border-left-width: 3px; }
+  .receipt-item { padding-inline: 2px; }
+}

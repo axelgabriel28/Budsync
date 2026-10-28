@@ -883,7 +883,7 @@ function App() {
   return <div className={'app' + (sidebarCollapsed ? ' sidebar-compact' : '')}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <aside className="sidebar">
-      <div className="sidebar-top"><button className="brand" type="button" aria-label="Budsync home" onClick={() => setPage('overview')}><span className="brand-icon">◉</span><span className="brand-word">budsync<span>.</span></span></button><button className="collapse-button" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={() => setSidebarCollapsed(!sidebarCollapsed)}><NavIcon name="menu" size={19} /></button></div>
+      <div className="sidebar-top"><button className="brand" type="button" aria-label="Budsync home" onClick={() => setPage('overview')}><img className="brand-logo brand-logo-light" src={`${import.meta.env.BASE_URL}budsync-logo-light.png`} alt="Budsync" /><img className="brand-logo brand-logo-dark" src={`${import.meta.env.BASE_URL}budsync-logo-dark.png`} alt="Budsync" /></button><button className="collapse-button" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={() => setSidebarCollapsed(!sidebarCollapsed)}><NavIcon name="menu" size={19} /></button></div>
       <div className="mobile-header-actions"><button type="button" aria-label="Insights" onClick={() => setPage('reports')}><NavIcon name="reports" /></button><button type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><NavIcon name={theme === 'dark' ? 'sun' : 'moon'} /></button><button type="button" aria-label="Settings" onClick={() => setPage('account')}><NavIcon name="account" /></button></div>
       <div className="side-content">
         <p className="nav-label">WORKSPACE</p>
@@ -891,7 +891,7 @@ function App() {
         <p className="nav-label wallets-label">YOUR WALLETS</p>
         <div className="side-wallets">{activeWallets.map((wallet) => <button type="button" key={wallet.id} onClick={() => showWallet(wallet.id)}><span className={'mini-wallet ' + wallet.color}>{wallet.name[0]}</span>{wallet.name}</button>)}</div>
       </div>
-      <div className="side-bottom"><span className="side-status-dot" /><div><strong>{syncStatus}</strong><small>{session ? 'Your account workspace' : 'Guest workspace · PHP only'}</small></div></div>
+      <div className="side-bottom"><span className="side-status-dot" /><div><strong>{syncStatus}</strong><small>{session ? 'Your account workspace' : 'Guest workspace'}</small></div></div>
     </aside>
     <div className="main">
       <header className="topbar"><div className="breadcrumb">Workspace <span>›</span> <strong>{navigation.find(([id]) => id === page)?.[1]}</strong></div><div className="top-right"><span className={'status' + (syncError || storageError ? ' status-error' : workspace.dirty ? ' status-pending' : '')} role="status"><i /> {syncStatus}</span><button className="top-icon-button" type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><NavIcon name={theme === 'dark' ? 'sun' : 'moon'} size={18} /></button><button className="avatar" type="button" aria-label="Settings" onClick={() => setPage('account')}>B</button></div></header>
