@@ -125,8 +125,8 @@ function App() {
     ]),
   }), [data.entries, data.budgets])
   const accountId = session?.user.id
-  const [page, setPage] = useState('overview')
-  const [settingsSection, setSettingsSection] = useState('appearance')
+  const [page, setPage] = useState(() => new URLSearchParams(window.location.search).get('page') === 'account' ? 'account' : 'overview')
+  const [settingsSection, setSettingsSection] = useState(() => new URLSearchParams(window.location.search).get('page') === 'account' ? 'connections' : 'appearance')
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState(() => entryForm('expense', starterWallets))
   const [walletForm, setWalletForm] = useState({ name: '', openingBalance: '0', editNote: '' })
@@ -998,7 +998,7 @@ function IntroTour({ step, onStep, onFinish }) {
 }
 
 function PolicyLinks() {
-  return <footer className="policy-links"><span>Budsync is a personal finance tracker. It does not connect to banks.</span><nav aria-label="Legal"><a href="/privacy.html">Privacy policy</a><a href="/terms.html">Terms of service</a></nav></footer>
+  return <footer className="policy-links"><span>Budsync helps organize financial records. It does not connect to banks.</span><nav aria-label="Product and legal"><a href="/welcome">About Budsync</a><a href="/privacy.html">Privacy policy</a><a href="/terms.html">Terms of service</a></nav></footer>
 }
 
 function Metric({ label, value, detail, tone, icon }) {

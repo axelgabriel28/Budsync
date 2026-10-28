@@ -1,7 +1,8 @@
-const cacheName = 'budsync-shell-v6'
+const cacheName = 'budsync-shell-v7'
 const shellFiles = [
-  '/', '/index.html', '/manifest.webmanifest', '/favicon.svg',
+  '/', '/index.html', '/welcome', '/manifest.webmanifest',
   '/icon-192.png', '/icon-512.png', '/icon-180.png',
+  '/budsync-logo-light.png', '/budsync-logo-dark.png',
   '/ocr/worker.min.js', '/ocr/eng.traineddata.gz',
   '/ocr/tesseract-core-lstm.wasm.js',
   '/ocr/tesseract-core-simd-lstm.wasm.js',

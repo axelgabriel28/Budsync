@@ -1,12 +1,12 @@
 {
   "name": "Budsync",
   "short_name": "Budsync",
-  "description": "A local multi-wallet finance tracker",
+  "description": "Organize wallets, budgets, transactions, and receipts in one finance workspace",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f7f8fc",
-  "theme_color": "#6057f7",
+  "background_color": "#f5f5f5",
+  "theme_color": "#0b0b0b",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
