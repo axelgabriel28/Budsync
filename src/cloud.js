@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut as firebaseSignOut } from 'firebase/auth'
+import { GoogleAuthProvider, getAuth, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth'
 import { getDatabase, get, ref, runTransaction } from 'firebase/database'
 import { decodeSnapshot, encodeSnapshot, nextSnapshot } from './cloudSnapshot.js'
 
@@ -17,6 +17,8 @@ const auth = app ? getAuth(app) : null
 const database = app ? getDatabase(app) : null
 
 const account = (user) => user ? { user: { id: user.uid, email: user.email } } : null
+const googleProvider = new GoogleAuthProvider()
+googleProvider.addScope('https://www.googleapis.com/auth/drive.file')
 
 async function currentUser() {
   if (!cloudReady) throw new Error('Firebase is not configured.')
@@ -33,14 +35,15 @@ export async function readSession() {
   return account(auth.currentUser)
 }
 
-export async function signIn(email, password) {
+export async function signInWithGoogle() {
   if (!cloudReady) throw new Error('Firebase is not configured.')
-  return account((await signInWithEmailAndPassword(auth, email, password)).user)
-}
-
-export async function signUp(email, password) {
-  if (!cloudReady) throw new Error('Firebase is not configured.')
-  return account((await createUserWithEmailAndPassword(auth, email, password)).user)
+  const result = await signInWithPopup(auth, googleProvider)
+  const credential = GoogleAuthProvider.credentialFromResult(result)
+  return { ...account(result.user), driveAuthorization: credential?.accessToken ? {
+    token: credential.accessToken,
+    email: result.user.email?.trim().toLowerCase(),
+    expiresAt: Date.now() + 3600 * 1000,
+  } : null }
 }
 
 export async function signOut() {

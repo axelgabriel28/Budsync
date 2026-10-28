@@ -34,7 +34,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   const [approvedDuplicateKey, setApprovedDuplicateKey] = useState('')
   const [crop, setCrop] = useState(fullCrop)
   const [rotation, setRotation] = useState(0)
-  const [enhance, setEnhance] = useState(true)
+  const [enhance, setEnhance] = useState(false)
   const [scanned, setScanned] = useState(null)
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')

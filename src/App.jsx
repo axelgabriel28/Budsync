@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { backupJson, parseBackup, starterWallets, transactionsCsv } from './data.js'
 import { entryImpact, monthlyReport, previewEntryBalances, walletBalances } from './finance.js'
 import { freshWorkspace, readPreviousAccountWorkspace, readWorkspace, workspaceKey, writeWorkspace } from './localStore.js'
-import { applySnapshot, cloudReady, fetchSnapshot, readSession, signIn, signOut, signUp } from './cloud.js'
+import { applySnapshot, cloudReady, fetchSnapshot, readSession, signInWithGoogle, signOut } from './cloud.js'
 import { changedRecords } from './syncReview.js'
 import { budgetUsage, cashFlowByMonth, monthComparison } from './insights.js'
 import ReceiptPage from './ReceiptPage.jsx'
@@ -149,6 +149,7 @@ function App() {
   const [driveLastSyncedAt, setDriveLastSyncedAt] = useState(null)
   const [receiptRefresh, setReceiptRefresh] = useState(0)
   const driveSessionRef = useRef(null)
+  const driveErrorRef = useRef('')
   const driveLock = useRef(false)
   const drivePending = useRef(false)
   const pendingDriveReceipts = useRef(new Map())
@@ -387,6 +388,33 @@ function App() {
         setAuthPassword('')
         setAuthConfirm('')
         setAuthConfirmation('Check your email to confirm your account, then log in.')
+      }
+    } catch (cause) { setAuthError(cause.message) }
+    finally { setAuthBusy(false) }
+  }
+
+  async function continueWithGoogle() {
+    setAuthBusy(true)
+    setAuthError('')
+    setAuthConfirmation('')
+    try {
+      const result = await signInWithGoogle()
+      const { driveAuthorization, ...next } = result
+      await openAccount(next)
+      let authorization = driveAuthorization
+      if (!authorization?.token && googleClientId) {
+        authorization = await connectGoogleDrive(next.user.email?.trim().toLowerCase())
+      }
+      if (authorization?.email === next.user.email?.trim().toLowerCase()) {
+        const connected = await activateDriveAccount(authorization, workspaceKey(next.user.id))
+        setAuthConfirmation(connected
+          ? 'Signed in with Google. Budsync Drive folder is ready; receipt changes sync automatically.'
+          : `Signed in with Google, but Drive setup failed: ${driveErrorRef.current || 'Google Drive could not finish setup.'}`)
+      } else {
+        const message = 'Google sign-in did not return Drive authorization. Connect Google Drive and grant access; receipts remain saved on this device.'
+        setDriveUploadError(message)
+        setDriveStatus(message)
+        setAuthConfirmation('Signed in with Google. Drive access is missing; receipt images remain on this device.')
       }
     } catch (cause) { setAuthError(cause.message) }
     finally { setAuthBusy(false) }
@@ -806,6 +834,7 @@ function App() {
     driveLock.current = true
     setDriveBusy(true)
     setDriveUploadError('')
+    driveErrorRef.current = ''
     try {
       const current = { ...authorization, scope: currentScope }
       setDriveStatus('Connected. Checking Drive for receipt changes…')
@@ -816,9 +845,12 @@ function App() {
       setDriveSession({ ...current })
       await recordDriveSync(current, uploaded)
       setDriveStatus(`Connected. Updated ${restored.folders} folders and ${restored.receipts} receipts; uploaded ${uploaded.uploaded} files.${restored.skipped ? ` ${restored.skipped} items need matching wallets.` : ''}`)
+      return true
     } catch (cause) {
+      driveErrorRef.current = cause.message
       setDriveUploadError(cause.message)
       setDriveStatus(`Google Drive connection failed: ${cause.message}`)
+      return false
     }
     finally {
       driveLock.current = false
@@ -917,19 +949,10 @@ function App() {
             <p className="sync-state" role="status">{syncStatus}</p>
             <div className="button-row"><button className="secondary" type="button" disabled={loading} onClick={leaveAccount}>Log out</button></div>
           </> : <>
-            <p>Log in to sync your records across devices, or sign up for a new account. Guest records stay on this device until you choose to copy them into an account.</p>
+            <p>Sign in with Google to sync your records across devices. Guest records stay on this device until you choose to copy them into an account.</p>
             {cloudReady ? <>
-              <div className="auth-tabs" role="group" aria-label="Account action">
-                <button type="button" className={authMode === 'login' ? 'selected' : ''} aria-pressed={authMode === 'login'} disabled={authBusy} onClick={() => changeAuthMode('login')}>Login</button>
-                <button type="button" className={authMode === 'signup' ? 'selected' : ''} aria-pressed={authMode === 'signup'} disabled={authBusy} onClick={() => changeAuthMode('signup')}>Sign up</button>
-              </div>
-              <form className="auth-form" onSubmit={submitAuth}>
-                <label>Email<input required type="email" autoComplete="email" value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} /></label>
-                <label>Password<input required type="password" minLength="6" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} /></label>
-                {authMode === 'signup' && <label>Confirm password<input required type="password" minLength="6" autoComplete="new-password" value={authConfirm} onChange={(event) => setAuthConfirm(event.target.value)} /></label>}
-                {authError && <p className="form-error" role="alert">{authError}</p>}
-                <div className="button-row"><button className="primary" type="submit" disabled={authBusy}>{authBusy ? 'Please wait…' : authMode === 'signup' ? 'Create account' : 'Login'}</button></div>
-              </form>
+              {authError && <p className="form-error" role="alert">{authError}</p>}
+              <div className="button-row"><button className="primary" type="button" disabled={authBusy} onClick={continueWithGoogle}>{authBusy ? 'Please wait…' : 'Continue with Google'}</button></div>
             </> : <p>Account access needs the Firebase web app values in <code>.env.local</code>.</p>}
           </>}</section>
           <section className="data-card"><h2>Google Drive receipts</h2><p>Connect Google Drive with the same email you use to sign in to Budsync. Google will use your Budsync email automatically. If Google authorizes another account, Budsync blocks the connection before any receipts are restored or uploaded. Budsync creates <code>Budsync / wallet name / folder name / files</code> in Drive. Deleted local receipts and folders move to Drive Trash on the next sync. Your local copy remains available while disconnected.</p>{googleClientId ? <div className="button-row"><button className="primary" type="button" disabled={driveBusy || !isOnline} onClick={connectDrive}>{driveSession ? 'Reconnect Google Drive' : 'Connect Google Drive'}</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={uploadReceipts}>Sync receipts now</button><button className="secondary" type="button" disabled={driveBusy || !driveSession || !isOnline} onClick={restoreDrive}>Download Drive changes</button>{driveFolderUrl && <a className="drive-folder-link" href={driveFolderUrl} target="_blank" rel="noopener noreferrer">Open Budsync folder <span aria-hidden="true">↗</span></a>}</div> : <p>Google Drive uploads are not set up for this site. Add a Google OAuth Web client ID as <code>VITE_GOOGLE_CLIENT_ID</code>, then rebuild and deploy the app. Images saved now stay on this device. The README has setup steps.</p>}{driveStatus && <p className="sync-state" role={driveUploadError ? 'alert' : 'status'}>{driveStatus}</p>}</section>
