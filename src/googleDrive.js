@@ -32,7 +32,7 @@ export async function connectGoogleDrive(expectedEmail) {
   if (!window.google?.accounts?.oauth2) return Promise.reject(new Error('Google sign-in is still loading. Try again.'))
   return new Promise((resolve, reject) => {
     const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: googleClientId, scope, login_hint: expectedEmail,
+      client_id: googleClientId, scope, login_hint: expectedEmail, prompt: '',
       callback: async (result) => {
         if (result.error) return reject(new Error(result.error_description || result.error))
         try {

@@ -117,9 +117,6 @@ function App() {
   const persistQueue = useRef(Promise.resolve())
   const saveRequest = useRef(0)
   const data = workspace.data
-  const driveFolderUrl = driveSession?.folderId
-    ? `https://drive.google.com/drive/folders/${encodeURIComponent(driveSession.folderId)}`
-    : ''
   const categoryOptions = useMemo(() => ({
     income: categoryChoices(categories.income, data.entries.filter((entry) => entry.type === 'income').map((entry) => entry.category)),
     expense: categoryChoices(categories.expense, [
@@ -143,6 +140,9 @@ function App() {
   const [reportMonth, setReportMonth] = useState(localDate().slice(0, 7))
   const [pendingBackup, setPendingBackup] = useState(null)
   const [driveSession, setDriveSession] = useState(null)
+  const driveFolderUrl = driveSession?.folderId
+    ? `https://drive.google.com/drive/folders/${encodeURIComponent(driveSession.folderId)}`
+    : ''
   const [driveBusy, setDriveBusy] = useState(false)
   const [driveStatus, setDriveStatus] = useState('')
   const [driveUploadError, setDriveUploadError] = useState('')
