@@ -10,7 +10,7 @@ Budsync is a phone-friendly finance tracker for managing money across multiple w
 - **Record money movement.** Add income, expenses, balance adjustments, and transfers between different wallets. Search and filter history, edit entries with a reason, and restore deleted entries. A transfer changes the two wallet balances without changing their combined total.
 - **Understand your finances.** The dashboard shows balances, monthly income and expenses, cash flow, spending categories, and recent activity. Insights includes category budgets and savings targets. These plans track progress; they do not move money.
 - **Keep receipts with expenses.** Take a photo or choose an image, adjust it if needed, and optionally read merchant, date, amount, and line items with on-device OCR. Confirm the details before saving. You can also record an amount now and attach its image later without deducting it twice.
-- **Use it on a phone.** Budsync has a responsive layout, light and dark themes, and an installable app shell. Records remain available on the device while offline.
+- **Use it on a phone.** Budsync has a responsive layout, light and dark themes, and an installable app shell. Main navigation, including Insights, is in the bottom bar; the header keeps theme and settings controls. Records remain available on the device while offline.
 
 ## Your data
 
