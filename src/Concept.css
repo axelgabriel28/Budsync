@@ -111,6 +111,42 @@
 .receipt-item img,.receipt-no-image { width:52px; height:65px; object-fit:cover; border-radius:9px; }
 .receipt-item-actions { gap:8px; }
 .receipt-item-actions button { min-height:36px; padding:0 6px; }
+/* Keep supporting text and icon treatments consistent in both themes. */
+.section-head p,
+.page-head p,
+.widget-head p,
+.wallet-type,
+.wallet-balance-label,
+.metric small,
+.transaction-info span,
+.transaction-info small,
+.transaction-amount span,
+.receipt-item-main span,
+.receipt-item-main small,
+.receipt-image-status,
+.receipt-local-note,
+.receipt-empty-copy {
+  color: var(--muted);
+}
+.metric-icon,
+.quick-icon,
+.transaction-icon,
+.wallet-icon,
+.settings-icon,
+.receipt-no-image {
+  color: var(--ink);
+  background: var(--surface-soft);
+}
+.green, .teal, .coral, .blue, .purple, .orange {
+  color: var(--ink);
+  background: var(--surface-soft);
+}
+.status i,
+.mobile-sync-pill i,
+.side-status-dot { background: #777 !important; }
+:root[data-theme='dark'] .status i,
+:root[data-theme='dark'] .mobile-sync-pill i,
+:root[data-theme='dark'] .side-status-dot { background: #bcbcbc !important; }
 :root[data-theme='dark'] .app,:root[data-theme='dark'] .main,
 :root[data-theme='dark'] .sidebar,:root[data-theme='dark'] .topbar { background:#0b0b0b; }
 :root[data-theme='dark'] .sidebar nav button { color:#d2d2d2; }
@@ -134,6 +170,10 @@
   .top-right .status { display: none; }
 }
 @media (max-width: 820px) {
+  :root:not([data-theme='dark']) .app {
+    --muted: #4a4a4a;
+    --quiet: #555555;
+  }
   .sidebar-top { min-height: 64px; border-bottom: 0; }
   .brand, .sidebar-compact .brand { height: 64px; }
   .main { background: var(--canvas); }
@@ -141,6 +181,12 @@
   .mobile-header-actions button { width: 40px; height: 40px; }
   .mobile-dock { height: 70px; }
   .mobile-dock button { min-height: 56px; font-size: 11px; }
+  .mobile-dock button svg,
+  .mobile-header-actions button svg,
+  .sidebar nav .nav-icon svg,
+  .wallet-icon svg,
+  .transaction-icon svg,
+  .metric-icon svg { color: currentColor; }
   .wallet-grid:not(.wallet-details) { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 600px) {

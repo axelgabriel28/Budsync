@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { House, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Building2, Wallet, PiggyBank, Smartphone, ReceiptText, ChartNoAxesColumnIncreasing, Settings2, SlidersHorizontal, Calculator, Plus, Sun, Moon, Search } from 'lucide-react'
+import { House, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Building2, Wallet, PiggyBank, Smartphone, ReceiptText, ChartNoAxesColumnIncreasing, Settings2, SlidersHorizontal, Calculator, Sun, Moon, Search } from 'lucide-react'
 import { backupJson, parseBackup, starterWallets, transactionsCsv } from './data.js'
 import { entryImpact, monthlyReport, previewEntryBalances, walletBalances } from './finance.js'
 import { freshWorkspace, readPreviousAccountWorkspace, readWorkspace, workspaceKey, writeWorkspace } from './localStore.js'
@@ -164,6 +164,7 @@ function App() {
   const [driveUploadError, setDriveUploadError] = useState('')
   const [driveLastSyncedAt, setDriveLastSyncedAt] = useState(null)
   const [receiptRefresh, setReceiptRefresh] = useState(0)
+  const [receiptAddRequest, setReceiptAddRequest] = useState(0)
   const driveSessionRef = useRef(null)
   const driveErrorRef = useRef('')
   const driveLock = useRef(false)
@@ -950,7 +951,7 @@ function App() {
 
         {page === 'reports' && <Reports report={report} month={reportMonth} onMonth={setReportMonth} budgets={data.budgets || []} goals={data.goals || []} wallets={data.wallets} balances={balances} hidden={balanceHidden} categoryOptions={categoryOptions} onAddBudget={addBudget} onRemoveBudget={removeBudget} onAddGoal={addGoal} onRemoveGoal={removeGoal} />}
 
-        {page === 'receipts' && <ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} hidden={balanceHidden} />}
+        {page === 'receipts' && <ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} addReceiptRequest={receiptAddRequest} hidden={balanceHidden} />}
 
         {page === 'account' && <div className="data-page">
           <div className="page-head"><div><div className="eyebrow">YOUR SPACE</div><h1>Settings</h1><p>Personalize Budsync, manage your account, and control your data.</p></div></div>
@@ -993,8 +994,8 @@ function App() {
 
     <nav className="mobile-dock" aria-label="Mobile navigation">
       {[['overview', 'Home'], ['wallets', 'Wallets']].map(([id, label]) => { const Icon = sidebarIcons[id]; return <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><Icon size={21} strokeWidth={1.9} aria-hidden="true" /><span>{label}</span></button> })}
-      <button className="dock-add" type="button" aria-label="Add transaction" onClick={() => openEntry()}><Plus size={24} strokeWidth={2} aria-hidden="true" /><span>Add</span></button>
-      {[['transactions', 'Activity'], ['receipts', 'Receipts']].map(([id, label]) => { const Icon = sidebarIcons[id]; return <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><Icon size={21} strokeWidth={1.9} aria-hidden="true" /><span>{label}</span></button> })}
+      <button className="dock-add" type="button" aria-label="Add receipt" onClick={() => { setReceiptAddRequest((current) => current + 1); setPage('receipts') }}><ReceiptText size={22} strokeWidth={1.9} aria-hidden="true" /><span>Receipt</span></button>
+      {[['transactions', 'Activity'], ['reports', 'Insights']].map(([id, label]) => { const Icon = sidebarIcons[id]; return <button type="button" key={id} className={page === id ? 'active' : ''} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><Icon size={21} strokeWidth={1.9} aria-hidden="true" /><span>{label}</span></button> })}
     </nav>
 
     {modal?.kind === 'entry' && <EntryModal form={form} setForm={setForm} error={error} setError={setError} modal={modal} wallets={data.wallets} balances={balances} previous={data.entries.find((entry) => entry.id === modal.id)} hidden={balanceHidden} categoryOptions={categoryOptions} onClose={() => setModal(null)} onSave={saveEntry} />}

@@ -14,9 +14,10 @@ const fullCrop = { left: 0, right: 100, top: 0, bottom: 100 }
 const makeId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
 const blankReceipt = () => ({ merchant: '', date: today(), amount: '', note: '', reason: '' })
 
-function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemoved, onFolderWalletChanged, onDriveSync, onConnectDrive, driveConnected, driveFolderUrl, driveAvailable, driveBusy, driveStatus, driveUploadError, driveLastSyncedAt, onOpenSettings, refreshKey, hidden }) {
+function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemoved, onFolderWalletChanged, onDriveSync, onConnectDrive, driveConnected, driveFolderUrl, driveAvailable, driveBusy, driveStatus, driveUploadError, driveLastSyncedAt, onOpenSettings, refreshKey, addReceiptRequest = 0, hidden }) {
   const displayMoney = (value) => hidden ? '₱ ••••••' : php(value)
   const [folders, setFolders] = useState([])
+  const [foldersLoaded, setFoldersLoaded] = useState(false)
   const [receipts, setReceipts] = useState([])
   const [folderId, setFolderId] = useState('')
   const [folderForm, setFolderForm] = useState({ name: '', walletId: '', budget: '', reason: '' })
@@ -42,6 +43,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   const [cameraOn, setCameraOn] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
+  const handledAddRequest = useRef(0)
 
   useEffect(() => {
     let active = true
@@ -50,6 +52,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
       setFolders(nextFolders)
       setReceipts(nextReceipts)
       setFolderId((current) => nextFolders.some((folder) => folder.id === current) ? current : nextFolders[0]?.id || '')
+      setFoldersLoaded(true)
     }).catch((cause) => { if (active) setError(`Receipt storage could not be read: ${cause.message}`) })
     return () => { active = false }
   }, [scope, refreshKey])
@@ -62,6 +65,13 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   useEffect(() => {
     if (cameraOn && videoRef.current) videoRef.current.srcObject = streamRef.current
   }, [cameraOn])
+
+  useEffect(() => {
+    if (!foldersLoaded || !addReceiptRequest || handledAddRequest.current === addReceiptRequest) return
+    handledAddRequest.current = addReceiptRequest
+    if (folderId) openScanner()
+    else setNotice('Create a receipt folder before adding a receipt.')
+  }, [addReceiptRequest, folderId, foldersLoaded])
 
   useEffect(() => {
     if (!scanOpen) return undefined
