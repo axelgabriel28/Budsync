@@ -54,9 +54,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .brand-icon { width: 36px; height: 36px; flex: 0 0 36px; margin: 0; background: linear-gradient(145deg, #555b60, #383d41 62%, #292e32); border-radius: 12px; box-shadow: 0 7px 18px rgba(0,0,0,.14); font-size: 19px; }
 .brand { width: 185px; min-width: 0; }
 .brand-logo { display: block; width: 100%; height: auto; object-fit: contain; }
-.brand-logo-dark { display: none; }
-:root[data-theme='dark'] .brand-logo-light { display: none; }
-:root[data-theme='dark'] .brand-logo-dark { display: block; }
+:root[data-theme='dark'] .brand-logo { background: #fff; border-radius: 5px; }
 .brand-word > span { color: var(--indigo); }
 .collapse-button, .top-icon-button, .mobile-header-actions button { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--muted); transition: transform 160ms var(--ease), color 160ms var(--ease), background 160ms var(--ease); }
 .collapse-button:hover, .top-icon-button:hover, .mobile-header-actions button:hover { color: var(--indigo); background: var(--surface-soft); }

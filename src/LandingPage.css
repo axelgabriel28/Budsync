@@ -10,9 +10,7 @@
 .landing-nav { max-width:1440px; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:26px; }
 .landing-brand { display:inline-flex; width:158px; height:46px; align-items:center; overflow:hidden; }
 .landing-brand img { display:block; width:100%; height:auto; }
-.landing-logo-dark { display:none!important; }
-:root[data-theme='dark'] .landing-logo-light { display:none!important; }
-:root[data-theme='dark'] .landing-logo-dark { display:block!important; }
+:root[data-theme='dark'] .landing-brand { background:#fff; border-radius:5px; }
 .landing-links,.landing-nav-actions,.landing-actions { display:flex; align-items:center; gap:28px; }
 .landing-links a,.landing-signin { font-size:13px; font-weight:600; }
 .landing-links a:hover,.landing-signin:hover,.landing-text-link:hover { text-decoration:underline; text-underline-offset:5px; }
