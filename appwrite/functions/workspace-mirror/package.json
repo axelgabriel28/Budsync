@@ -1,0 +1,8 @@
+{
+  "name": "budsync-workspace-mirror",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  }
+}

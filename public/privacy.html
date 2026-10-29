@@ -42,6 +42,7 @@
       <ul>
         <li><strong>On your device:</strong> Budsync saves workspace records, receipt folders, and receipt images in this browser's local storage. Your theme preference and sign-in session may also be stored by the browser. Clearing site data can remove the local copies.</li>
         <li><strong>Firebase, if you sign in:</strong> Firebase Authentication processes your email address and account identifier. Budsync syncs wallet records, transactions, budgets, and savings targets to the Budsync workspace for your account. Receipt images and folders are not included in Firebase workspace sync.</li>
+        <li><strong>Appwrite, if you sign in:</strong> Budsync keeps a separate database copy of the signed-in workspace, including wallets, transactions, budgets, savings targets, and their settings. Firebase remains the sign-in service and primary live sync. Receipt images and folders are not included in this copy.</li>
         <li><strong>Google Drive, if you connect it:</strong> Budsync requests the Google Drive <code>drive.file</code> permission. It uses Google Drive to create and sync Budsync receipt folders, receipt details, and images. Google Drive is optional and separate from Firebase account sync.</li>
       </ul>
 
@@ -49,11 +50,11 @@
       <p>Receipt image preparation and text recognition run in your browser. The recognized text is shown for your review. Budsync does not send receipt images to an OCR service. If you choose Google Drive sync, receipt details and images are uploaded to your Drive.</p>
 
       <h2>How information is used and shared</h2>
-      <p>Budsync uses your information to provide the tracker, calculate wallet balances and reports, restore backups, sync your workspace to Firebase when signed in, and sync receipt files to Google Drive when connected. Firebase and Google process data needed to provide those services under their own terms and privacy policies. Budsync does not sell your financial records or use Google Drive data for advertising.</p>
+      <p>Budsync uses your information to provide the tracker, calculate wallet balances and reports, restore backups, sync your workspace through Firebase and keep a database copy in Appwrite when signed in, and sync receipt files to Google Drive when connected. Firebase, Appwrite, and Google process data needed to provide those services under their own terms and privacy policies. Budsync does not sell your financial records or use Google Drive data for advertising.</p>
       <p>Budsync's use and transfer of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
 
       <h2>Your choices and data requests</h2>
-      <p>You can use Budsync without signing in or connecting Google Drive. You can disconnect from Google Drive by revoking Budsync's access in your Google Account. You can export a JSON backup or a transaction CSV in Settings. Budsync currently has no in-app account deletion control; removing site data from your browser deletes that browser's local copy but does not delete copies already synced to Firebase or Google Drive.</p>
+      <p>You can use Budsync without signing in or connecting Google Drive. You can disconnect from Google Drive by revoking Budsync's access in your Google Account. You can export a JSON backup or a transaction CSV in Settings. Budsync currently has no in-app account deletion control; removing site data from your browser deletes that browser's local copy but does not delete copies already synced to Firebase, Appwrite, or Google Drive.</p>
       <p>For questions or data requests, contact the project maintainer through the <a href="https://github.com/axelgabriel28/Budsync/issues">Budsync repository</a>. Do not post passwords, receipt images, account details, or financial information in a public issue.</p>
 
       <h2>Policy updates</h2>

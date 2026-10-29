@@ -16,7 +16,7 @@ Key goals:
 - Record income, expenses, transfers, and balance adjustments
 - Keep reports based on real transactions instead of stored duplicate totals
 - Preserve local-first behavior for guests and offline use
-- Support optional Firebase sync and Google Drive receipt storage
+- Support Firebase account sync, an Appwrite workspace database mirror, and Google Drive receipt storage
 - Capture and reconcile receipts with expenses
 
 ## Features
@@ -26,7 +26,7 @@ Key goals:
 - Search, filtering, and transaction history review
 - Dashboard and Insights views for monthly activity, cash flow, categories, and savings goals
 - Receipt capture and OCR for merchant, date, amount, and line-item extraction
-- Local storage with optional Firebase account sync across devices
+- Local storage with Firebase account sync and an Appwrite database copy for signed-in users
 - Google Drive receipt sync and backup/export workflows
 - Responsive phone-first layout with light and dark themes
 
@@ -41,7 +41,7 @@ Important rules in the app:
 - Transfers between different wallets preserve the total combined balance.
 - Balance adjustments require a reason when the UI or data model requires it.
 - Sample opening balances are clearly labeled as samples.
-- Guest data is stored locally first; Firebase sync and Drive integration are optional features.
+- Guest data is stored locally first. Signed-in workspaces sync through Firebase and are mirrored to Appwrite. Google Drive receipt storage is separate and optional.
 - Receipt images are not included in wallet backups or account sync exports.
 
 ## Getting started
@@ -60,7 +60,7 @@ npm run dev
 
 Then open the local Vite URL shown in the terminal.
 
-If you want to configure Firebase sync or Google Drive features on localhost, create a local environment file based on the project template (for example, copy `.env.example` to `.env.local`) and add the required values.
+For local development, create `.env.local` from `.env.example` and add the Firebase web app values, Google client ID, and Appwrite endpoint, project ID, and Function ID. Keep server keys out of `VITE_` variables. The Appwrite Function validates Firebase ID tokens and uses its generated, scoped runtime key to access the private workspace table.
 
 ## Project structure
 
@@ -68,7 +68,8 @@ If you want to configure Firebase sync or Google Drive features on localhost, cr
 - `src/App.jsx` contains the main navigation, dashboard, transaction flows, wallet management, Insights, and Settings.
 - `src/finance.js`, `src/data.js`, and `src/insights.js` handle financial calculations, validation, export logic, and insights.
 - `src/localStore.js` persists wallet workspaces locally.
-- `src/cloud.js`, `src/syncReview.js`, and `src/cloudSnapshot.js` support optional Firebase account sync and conflict review.
+- `src/cloud.js`, `src/appwriteMirror.js`, `src/syncReview.js`, and `src/cloudSnapshot.js` support Firebase account sync, the Appwrite workspace mirror, and conflict review.
+- `appwrite/functions/workspace-mirror/` contains the Appwrite Function that validates Firebase ID tokens and stores private workspace snapshot rows.
 - `src/ReceiptPage.jsx` and `src/receipt*.js` manage receipt capture, OCR, storage, reconciliation, and linking to wallet expenses.
 - `src/googleDrive*.js` implements optional Drive receipt sync.
 - `src/App.css`, `src/Fluid.css`, `src/ReceiptPage.css`, and `src/index.css` contain page, responsive, receipt, and global styling.

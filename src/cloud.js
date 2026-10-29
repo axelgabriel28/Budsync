@@ -51,6 +51,10 @@ export async function signOut() {
   if (auth) await firebaseSignOut(auth)
 }
 
+export async function firebaseIdToken() {
+  return (await currentUser()).getIdToken()
+}
+
 export async function fetchSnapshot() {
   const saved = await get(snapshotRef(await currentUser()))
   return saved.exists() ? decodeSnapshot(saved.val()) : null

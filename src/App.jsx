@@ -3,7 +3,8 @@ import { House, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Building2, Wallet, 
 import { backupJson, parseBackup, starterWallets, transactionsCsv } from './data.js'
 import { entryImpact, monthlyReport, previewEntryBalances, walletBalances } from './finance.js'
 import { freshWorkspace, readPreviousAccountWorkspace, readWorkspace, workspaceKey, writeWorkspace } from './localStore.js'
-import { applySnapshot, cloudReady, fetchSnapshot, readSession, signInWithGoogle, signOut } from './cloud.js'
+import { applySnapshot, cloudReady, fetchSnapshot, firebaseIdToken, readSession, signInWithGoogle, signOut } from './cloud.js'
+import { appwriteMirrorReady, saveAppwriteMirror } from './appwriteMirror.js'
 import { changedRecords } from './syncReview.js'
 import { budgetUsage, cashFlowByMonth, monthComparison } from './insights.js'
 const ReceiptPage = lazy(() => import('./ReceiptPage.jsx'))
@@ -105,6 +106,10 @@ function App() {
   const [saveAllowed, setSaveAllowed] = useState(true)
   const [storageError, setStorageError] = useState('')
   const [syncError, setSyncError] = useState('')
+  const [appwriteError, setAppwriteError] = useState('')
+  const [appwriteBusy, setAppwriteBusy] = useState(false)
+  const [appwriteMirroredRevision, setAppwriteMirroredRevision] = useState(0)
+  const appwriteMirroredRevisionRef = useRef(0)
   const [syncing, setSyncing] = useState(false)
   const [conflict, setConflict] = useState(null)
   const [authEmail, setAuthEmail] = useState('')
@@ -218,6 +223,7 @@ function App() {
           if (navigator.onLine) {
             try {
               const remote = await fetchSnapshot()
+              if (remote && appwriteMirrorReady) void mirrorWorkspace(remote.revision, remote.data)
               if (remote && (!local || (!local.dirty && remote.revision > local.revision))) {
                 local = { data: remote.data, revision: remote.revision, dirty: false }
               } else if (!remote && local) {
@@ -272,6 +278,7 @@ function App() {
         setWorkspace((current) => ({ ...current, revision: result.revision,
           dirty: JSON.stringify(current.data) !== JSON.stringify(sent.data) }))
         setSyncError('')
+        if (appwriteMirrorReady) void mirrorWorkspace(result.revision, sent.data)
       }
     } catch (cause) { setSyncError(cause.message) }
     finally { syncLock.current = false; setSyncing(false) }
@@ -343,6 +350,7 @@ function App() {
     const checkedScope = scopeRef.current
     try {
       const remote = await fetchSnapshot()
+      if (remote && appwriteMirrorReady) void mirrorWorkspace(remote.revision, remote.data)
       if (scopeRef.current !== checkedScope || syncLock.current) return
       const current = workspaceRef.current
       if (remote && remote.revision > current.revision) {
@@ -367,8 +375,37 @@ function App() {
   }
   useEffect(() => { cloudCheckRef.current = checkCloud })
 
+  async function mirrorWorkspace(revision, snapshot) {
+    if (revision <= appwriteMirroredRevisionRef.current) return true
+    appwriteMirroredRevisionRef.current = revision
+    try {
+      await saveAppwriteMirror(revision, snapshot, await firebaseIdToken())
+      setAppwriteError('')
+      appwriteMirroredRevisionRef.current = Math.max(appwriteMirroredRevisionRef.current, revision)
+      setAppwriteMirroredRevision((current) => Math.max(current, revision))
+      return true
+    } catch (cause) {
+      if (appwriteMirroredRevisionRef.current === revision) appwriteMirroredRevisionRef.current = revision - 1
+      setAppwriteError(cause.message)
+      return false
+    }
+  }
+
+  async function syncAppwriteNow() {
+    if (!session || !appwriteMirrorReady || !navigator.onLine || appwriteBusy) return
+    setAppwriteBusy(true)
+    try {
+      const revision = workspaceRef.current.revision || 1
+      appwriteMirroredRevisionRef.current = Math.min(appwriteMirroredRevisionRef.current, revision - 1)
+      if (await mirrorWorkspace(revision, workspaceRef.current.data)) setNotice('Workspace copy sent to Appwrite.')
+    } finally { setAppwriteBusy(false) }
+  }
+
   async function openAccount(nextSession) {
     setLoading(true)
+    appwriteMirroredRevisionRef.current = 0
+    setAppwriteMirroredRevision(0)
+    setAppwriteError('')
     driveSessionRef.current = null
     setDriveSession(null)
     setDriveStatus('')
@@ -381,6 +418,7 @@ function App() {
       let remote = null
       let remoteLoaded = false
       try { remote = await fetchSnapshot(); remoteLoaded = true } catch (cause) { setSyncError(cause.message) }
+      if (remote && appwriteMirrorReady) void mirrorWorkspace(remote.revision, remote.data)
       if (remote && (!local || (!local.dirty && remote.revision > local.revision))) {
         local = { data: remote.data, revision: remote.revision, dirty: false }
       } else if (remoteLoaded && !remote && local) local = { ...local, revision: 0, dirty: true }
@@ -994,8 +1032,10 @@ function App() {
           <section className="data-card"><h2>Restore a backup</h2><p>Choose a Budsync JSON backup. Review its contents before replacing this device’s records.</p><label className="import-label">Choose backup file<input type="file" accept=".json,application/json" onChange={chooseBackup} /></label>{error && <p className="form-error" role="alert">{error}</p>}{pendingBackup && <div className="restore-review"><strong>{pendingBackup.name}</strong><span>{pendingBackup.data.wallets.length} wallets · {pendingBackup.data.entries.length} transactions · {pendingBackup.data.budgets.length} budgets · {pendingBackup.data.goals.length} goals</span><p>Restoring replaces wallets, transactions, budgets, and goals. Local receipt folders and images without a matching receipt expense in this backup are removed, and those deletions sync to connected Google Drive. Download your current backup and any receipt images you need first.</p><div className="button-row"><button className="primary" type="button" onClick={restoreBackup}>Replace with this backup</button><button className="secondary" type="button" onClick={() => setPendingBackup(null)}>Cancel</button></div></div>}</section>
           </>}
           {settingsSection === 'connections' && session && <section className="data-card"><h2>Account sync</h2>
-            <p>While the app is open, changes from other devices appear automatically within a few seconds.</p>
+            <p>Firebase handles sign-in and live sync. Appwrite stores a separate database copy of your signed-in workspace.</p>
             <p className="sync-state" role="status">{syncStatus}</p>
+            <p className={appwriteError ? 'form-error' : 'sync-state'} role="status">Appwrite database mirror: {!appwriteMirrorReady ? 'not configured' : appwriteError ? `sync failed · ${appwriteError}` : appwriteMirroredRevision >= workspace.revision && workspace.revision > 0 ? 'up to date' : 'waiting for sync'}</p>
+            {appwriteMirrorReady && <button className="secondary" type="button" disabled={appwriteBusy || !isOnline} onClick={syncAppwriteNow}>{appwriteBusy ? 'Copying to Appwrite…' : 'Sync copy to Appwrite'}</button>}
             <div className="button-row"><button className="secondary" type="button" disabled={syncing} onClick={() => checkCloud()}>Check for updates</button><button className="secondary" type="button" onClick={reviewGuest}>Copy guest data here</button><button className="secondary" type="button" onClick={reviewPreviousAccount}>Copy previous account data</button></div>
             {pendingGuest && <div className="restore-review"><strong>Copy guest data into this account?</strong><span>{pendingGuest.wallets.length} wallets · {pendingGuest.entries.length} transactions</span><p>This replaces the account data on this device and queues it for sync. Download a backup of the current account first if you need it.</p><div className="button-row"><button className="primary" type="button" onClick={() => { editData(pendingGuest); setPendingGuest(null); setNotice('Guest records copied into your account and queued for sync.') }}>Copy guest data</button><button className="secondary" type="button" onClick={() => setPendingGuest(null)}>Cancel</button></div></div>}
             {pendingPrevious && <div className="restore-review"><strong>Copy saved data from {pendingPrevious.email}?</strong><span>{pendingPrevious.data.wallets.length} wallets · {pendingPrevious.data.entries.length} transactions</span><p>This is the last account copy saved on this device. It replaces the current Firebase workspace and uploads on the next sync. Export a backup first if you need the current workspace.</p><div className="button-row"><button className="primary" type="button" onClick={() => { editData(pendingPrevious.data); setPendingPrevious(null); setNotice('Previous account data copied into this Firebase account and queued for sync.') }}>Copy previous data</button><button className="secondary" type="button" onClick={() => setPendingPrevious(null)}>Cancel</button></div></div>}
