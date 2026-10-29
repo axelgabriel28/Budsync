@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { House, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Building2, Wallet, PiggyBank, Smartphone, ReceiptText, ChartNoAxesColumnIncreasing, Settings2, SlidersHorizontal, Calculator, Sun, Moon, Search } from 'lucide-react'
 import { backupJson, parseBackup, starterWallets, transactionsCsv } from './data.js'
 import { entryImpact, monthlyReport, previewEntryBalances, walletBalances } from './finance.js'
 import { freshWorkspace, readPreviousAccountWorkspace, readWorkspace, workspaceKey, writeWorkspace } from './localStore.js'
-import { applySnapshot, cloudReady, fetchSnapshot, readSession, signInWithGoogle, signOut } from './cloud.js'
+import { applySnapshot, cloudReady, fetchSnapshot, readSession, signInWithGoogle, signOut, verifyLoginWithRecaptcha } from './cloud.js'
 import { changedRecords } from './syncReview.js'
 import { budgetUsage, cashFlowByMonth, monthComparison } from './insights.js'
-import ReceiptPage from './ReceiptPage.jsx'
+const ReceiptPage = lazy(() => import('./ReceiptPage.jsx'))
 import { moveReceiptExpenses, removeReceiptExpenses, upsertReceiptExpense } from './receiptFinance.js'
 import { listDriveDeletes, listReceiptFolders, listReceipts, markReceiptDriveSynced, pruneReceiptCache } from './receiptStore.js'
 import { reconcileReceiptData } from './receiptReconcile.js'
@@ -415,6 +415,15 @@ function App() {
     setAuthError('')
     setAuthConfirmation('')
     try {
+      const siteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY
+      if (!siteKey || !window.grecaptcha?.enterprise) throw new Error('Sign-in verification is not ready. Refresh and try again.')
+      const token = await new Promise((resolve, reject) => {
+        window.grecaptcha.enterprise.ready(() => {
+          window.grecaptcha.enterprise.execute(siteKey, { action: 'LOGIN' }).then(resolve, reject)
+        })
+      })
+      const allowed = await verifyLoginWithRecaptcha(token)
+      if (!allowed) throw new Error('We could not verify this sign-in. Please try again.')
       const result = await signInWithGoogle()
       const { driveAuthorization, ...next } = result
       await openAccount(next)
@@ -913,7 +922,7 @@ function App() {
   return <div className={'app' + (sidebarCollapsed ? ' sidebar-compact' : '')}>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <aside className="sidebar">
-      <div className="sidebar-top"><button className="brand" type="button" aria-label="Budsync home" onClick={() => setPage('overview')}><img className="brand-logo" src={`${import.meta.env.BASE_URL}budsync-logo-black.png`} alt="Budsync" /></button><button className="collapse-button" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={() => setSidebarCollapsed(!sidebarCollapsed)}><NavIcon name="menu" size={19} /></button></div>
+      <div className="sidebar-top"><button className="brand" type="button" aria-label="Budsync home" onClick={() => setPage('overview')}><img className="brand-logo" src={`${import.meta.env.BASE_URL}${theme === 'dark' ? 'budsync-logo-dark.png' : 'Budsync_Charcoal_Wordmark.png'}`} alt="Budsync" /></button><button className="collapse-button" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={() => setSidebarCollapsed(!sidebarCollapsed)}><NavIcon name="menu" size={19} /></button></div>
       <div className="mobile-header-actions"><button type="button" aria-label={theme === 'dark' ? 'Use light theme' : 'Use dark theme'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun size={20} strokeWidth={1.9} aria-hidden="true" /> : <Moon size={20} strokeWidth={1.9} aria-hidden="true" />}</button><button type="button" aria-label="Settings" onClick={() => setPage('account')}><NavIcon name="account" /></button></div>
       <div className="side-content">
         <p className="nav-label">WORKSPACE</p>
@@ -964,7 +973,7 @@ function App() {
 
         {page === 'reports' && <Reports report={report} month={reportMonth} onMonth={setReportMonth} budgets={data.budgets || []} goals={data.goals || []} wallets={data.wallets} balances={balances} hidden={balanceHidden} categoryOptions={categoryOptions} onAddBudget={addBudget} onRemoveBudget={removeBudget} onAddGoal={addGoal} onRemoveGoal={removeGoal} />}
 
-        {page === 'receipts' && <ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} addReceiptRequest={receiptAddRequest} hidden={balanceHidden} />}
+        {page === 'receipts' && <Suspense fallback={<div className="loading-screen" role="status">Loading receipts…</div>}><ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} addReceiptRequest={receiptAddRequest} hidden={balanceHidden} /></Suspense>}
 
         {page === 'account' && <div className="data-page">
           <div className="page-head"><div><div className="eyebrow">YOUR SPACE</div><h1>Settings</h1><p>Personalize Budsync, manage your account, and control your data.</p></div></div>

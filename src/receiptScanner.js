@@ -1,4 +1,3 @@
-import { createWorker } from 'tesseract.js'
 import { parseReceiptText } from './receiptText.js'
 
 async function loadImage(blob) {
@@ -92,6 +91,7 @@ export async function prepareReceiptImage(blob, crop, rotation = 0, enhance = tr
 }
 
 export async function readReceipt(blob, onProgress) {
+  const { createWorker } = await import('tesseract.js')
   const root = `${import.meta.env.BASE_URL}ocr`
   const worker = await createWorker('eng', 1, {
     workerPath: `${root}/worker.min.js`,

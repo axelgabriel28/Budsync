@@ -1,0 +1,12 @@
+{
+  "name": "budsync-functions",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@google-cloud/recaptcha-enterprise": "^7.3.0",
+    "firebase-functions": "^7.4.0"
+  }
+}

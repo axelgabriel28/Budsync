@@ -1,11 +1,7 @@
-const cacheName = 'budsync-shell-v9'
+const cacheName = 'budsync-shell-v10'
 const shellFiles = [
   '/', '/index.html', '/welcome', '/manifest.webmanifest',
-  '/icon-192.png', '/icon-512.png', '/icon-180.png', '/budsync-logo-black.png',
-  '/ocr/worker.min.js', '/ocr/eng.traineddata.gz',
-  '/ocr/tesseract-core-lstm.wasm.js',
-  '/ocr/tesseract-core-simd-lstm.wasm.js',
-  '/ocr/tesseract-core-relaxedsimd-lstm.wasm.js',
+  '/Budsync_Light_Icon_Transparent.png',
 ]
 
 self.addEventListener('install', (event) => {

@@ -18,6 +18,9 @@
   object-fit: cover;
   object-position: left center;
 }
+.sidebar-compact .sidebar-top { width:100%; padding-right:0; align-items:center; }
+.sidebar-compact .brand { justify-content:center; }
+.sidebar-compact .collapse-button { align-self:center; }
 .side-content { padding:18px 16px; }
 .sidebar nav { gap:6px; }
 .sidebar nav button { min-height:48px; border-radius:11px; color:#555; font-size:14px; font-weight:600; gap:13px; }

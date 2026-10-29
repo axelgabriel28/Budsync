@@ -3,7 +3,7 @@
     "workspaces": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('revision').isNumber() && newData.child('revision').val() === (data.exists() ? data.child('revision').val() + 1 : 1) && newData.child('payload').isString()"
+        ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.numChildren() === 2 && newData.child('revision').isNumber() && newData.child('revision').val() === (data.exists() ? data.child('revision').val() + 1 : 1) && newData.child('payload').isString()"
       }
     }
   }

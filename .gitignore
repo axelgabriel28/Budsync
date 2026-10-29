@@ -7,6 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+functions/.env
+functions/.env.*
+!functions/.env.example
+
 node_modules
 dist
 dist-ssr

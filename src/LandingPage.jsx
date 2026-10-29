@@ -11,7 +11,7 @@ const features = [
 const wallets = ['Personal', 'Organization', 'Savings', 'E-Wallet']
 
 function Logo() {
-  return <span className="landing-brand"><img src={`${root}budsync-logo-black.png`} alt="Budsync" /></span>
+  return <span className="landing-brand"><img src={`${root}Budsync_Charcoal_Wordmark.png`} alt="Budsync" /></span>
 }
 
 function DashboardPreview() {

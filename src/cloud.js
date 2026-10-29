@@ -1,5 +1,7 @@
 import { initializeApp } from 'firebase/app'
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'
 import { GoogleAuthProvider, getAuth, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import { getDatabase, get, ref, runTransaction } from 'firebase/database'
 import { decodeSnapshot, encodeSnapshot, nextSnapshot } from './cloudSnapshot.js'
 
@@ -13,8 +15,17 @@ const config = {
 
 export const cloudReady = Object.values(config).every(Boolean)
 const app = cloudReady ? initializeApp(config) : null
+const recaptchaEnterpriseSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY
+export const appCheckReady = Boolean(app && recaptchaEnterpriseSiteKey)
+if (appCheckReady) {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(recaptchaEnterpriseSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  })
+}
 const auth = app ? getAuth(app) : null
 const database = app ? getDatabase(app) : null
+const functions = app ? getFunctions(app, 'asia-southeast1') : null
 
 const account = (user) => user ? { user: { id: user.uid, email: user.email } } : null
 const googleProvider = new GoogleAuthProvider()
@@ -44,6 +55,13 @@ export async function signInWithGoogle() {
     email: result.user.email?.trim().toLowerCase(),
     expiresAt: Date.now() + 3600 * 1000,
   } : null }
+}
+
+export async function verifyLoginWithRecaptcha(token) {
+  if (!functions) throw new Error('Firebase is not configured.')
+  const verifyLogin = httpsCallable(functions, 'assessLogin')
+  const result = await verifyLogin({ token })
+  return result.data?.allowed === true
 }
 
 export async function signOut() {
