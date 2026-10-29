@@ -1,7 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'
-import { GoogleAuthProvider, getAuth, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth'
-import { getFunctions, httpsCallable } from 'firebase/functions'
+import { GoogleAuthProvider, getAuth, getRedirectResult, signInWithPopup, signInWithRedirect, signOut as firebaseSignOut } from 'firebase/auth'
 import { getDatabase, get, ref, runTransaction } from 'firebase/database'
 import { decodeSnapshot, encodeSnapshot, nextSnapshot } from './cloudSnapshot.js'
 
@@ -15,21 +13,11 @@ const config = {
 
 export const cloudReady = Object.values(config).every(Boolean)
 const app = cloudReady ? initializeApp(config) : null
-const recaptchaEnterpriseSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY
-export const appCheckReady = Boolean(app && recaptchaEnterpriseSiteKey)
-if (appCheckReady) {
-  initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider(recaptchaEnterpriseSiteKey),
-    isTokenAutoRefreshEnabled: true,
-  })
-}
 const auth = app ? getAuth(app) : null
 const database = app ? getDatabase(app) : null
-const functions = app ? getFunctions(app, 'asia-southeast1') : null
 
 const account = (user) => user ? { user: { id: user.uid, email: user.email } } : null
 const googleProvider = new GoogleAuthProvider()
-googleProvider.addScope('https://www.googleapis.com/auth/drive.file')
 
 async function currentUser() {
   if (!cloudReady) throw new Error('Firebase is not configured.')
@@ -43,25 +31,20 @@ const snapshotRef = (user) => ref(database, `workspaces/${user.uid}`)
 export async function readSession() {
   if (!cloudReady) return null
   await auth.authStateReady()
-  return account(auth.currentUser)
+  const redirectResult = await getRedirectResult(auth)
+  return account(redirectResult?.user || auth.currentUser)
 }
 
 export async function signInWithGoogle() {
   if (!cloudReady) throw new Error('Firebase is not configured.')
-  const result = await signInWithPopup(auth, googleProvider)
-  const credential = GoogleAuthProvider.credentialFromResult(result)
-  return { ...account(result.user), driveAuthorization: credential?.accessToken ? {
-    token: credential.accessToken,
-    email: result.user.email?.trim().toLowerCase(),
-    expiresAt: Date.now() + 3600 * 1000,
-  } : null }
-}
-
-export async function verifyLoginWithRecaptcha(token) {
-  if (!functions) throw new Error('Firebase is not configured.')
-  const verifyLogin = httpsCallable(functions, 'assessLogin')
-  const result = await verifyLogin({ token })
-  return result.data?.allowed === true
+  try {
+    const result = await signInWithPopup(auth, googleProvider)
+    return account(result.user)
+  } catch (cause) {
+    if (cause.code !== 'auth/popup-blocked') throw cause
+    await signInWithRedirect(auth, googleProvider)
+    return null
+  }
 }
 
 export async function signOut() {

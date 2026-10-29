@@ -9,7 +9,5 @@
 
 ## Next
 
-1. Fix Firebase App Check setup. The latest supplied reCAPTCHA Enterprise site key returned `Invalid site key or not loaded in api.js` locally. Confirm the correct key, register it for the Firebase web app, and allow the development and production domains.
-2. Deploy the login-assessment Cloud Function after enabling the reCAPTCHA Enterprise API and granting its runtime service account `roles/recaptchaenterprise.agent`. Then review App Check metrics before enabling Authentication enforcement.
-3. Profile the main application bundle and slow screens before further optimization. Keep the current Firebase/React stack unless measured needs justify a migration; Cloudflare Pages remains an optional frontend host.
-4. Revisit a server-side API and PostgreSQL only when workspace size, query needs, or traffic justify the migration. Preserve IndexedDB offline behavior and Google Drive receipt storage unless product requirements change.
+1. Profile the main application bundle and slow screens before further optimization. Keep the current Firebase/React stack unless measured needs justify a migration; Cloudflare Pages remains an optional frontend host.
+2. Revisit a server-side API and PostgreSQL only when workspace size, query needs, or traffic justify the migration. Preserve IndexedDB offline behavior and Google Drive receipt storage unless product requirements change.

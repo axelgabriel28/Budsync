@@ -3,7 +3,7 @@ import { House, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Building2, Wallet, 
 import { backupJson, parseBackup, starterWallets, transactionsCsv } from './data.js'
 import { entryImpact, monthlyReport, previewEntryBalances, walletBalances } from './finance.js'
 import { freshWorkspace, readPreviousAccountWorkspace, readWorkspace, workspaceKey, writeWorkspace } from './localStore.js'
-import { applySnapshot, cloudReady, fetchSnapshot, readSession, signInWithGoogle, signOut, verifyLoginWithRecaptcha } from './cloud.js'
+import { applySnapshot, cloudReady, fetchSnapshot, readSession, signInWithGoogle, signOut } from './cloud.js'
 import { changedRecords } from './syncReview.js'
 import { budgetUsage, cashFlowByMonth, monthComparison } from './insights.js'
 const ReceiptPage = lazy(() => import('./ReceiptPage.jsx'))
@@ -415,33 +415,10 @@ function App() {
     setAuthError('')
     setAuthConfirmation('')
     try {
-      const siteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY
-      if (!siteKey || !window.grecaptcha?.enterprise) throw new Error('Sign-in verification is not ready. Refresh and try again.')
-      const token = await new Promise((resolve, reject) => {
-        window.grecaptcha.enterprise.ready(() => {
-          window.grecaptcha.enterprise.execute(siteKey, { action: 'LOGIN' }).then(resolve, reject)
-        })
-      })
-      const allowed = await verifyLoginWithRecaptcha(token)
-      if (!allowed) throw new Error('We could not verify this sign-in. Please try again.')
-      const result = await signInWithGoogle()
-      const { driveAuthorization, ...next } = result
+      const next = await signInWithGoogle()
+      if (!next) return
       await openAccount(next)
-      let authorization = driveAuthorization
-      if (!authorization?.token && googleClientId) {
-        authorization = await connectGoogleDrive(next.user.email?.trim().toLowerCase())
-      }
-      if (authorization?.email === next.user.email?.trim().toLowerCase()) {
-        const connected = await activateDriveAccount(authorization, workspaceKey(next.user.id))
-        setAuthConfirmation(connected
-          ? 'Signed in with Google. Budsync Drive folder is ready; receipt changes sync automatically.'
-          : `Signed in with Google, but Drive setup failed: ${driveErrorRef.current || 'Google Drive could not finish setup.'}`)
-      } else {
-        const message = 'Google sign-in did not return Drive authorization. Connect Google Drive and grant access; receipts remain saved on this device.'
-        setDriveUploadError(message)
-        setDriveStatus(message)
-        setAuthConfirmation('Signed in with Google. Drive access is missing; receipt images remain on this device.')
-      }
+      setAuthConfirmation('Signed in with Google. Connect Google Drive in Settings if you want to sync receipt images.')
     } catch (cause) { setAuthError(cause.message) }
     finally { setAuthBusy(false) }
   }
