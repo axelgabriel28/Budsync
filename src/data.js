@@ -40,6 +40,7 @@ export function validateData(input) {
     return {
       id: wallet.id,
       name: wallet.name.trim(),
+      parentId: typeof wallet.parentId === 'string' && wallet.parentId ? wallet.parentId : null,
       type: typeof wallet.type === 'string' ? wallet.type.slice(0, 60) : 'Custom',
       openingBalance: wallet.openingBalance,
       currency: 'PHP',
@@ -49,6 +50,19 @@ export function validateData(input) {
       editNote: typeof wallet.editNote === 'string' ? wallet.editNote.slice(0, 300) : '',
     }
   })
+  if (wallets.some((wallet) => wallet.parentId && !walletIds.has(wallet.parentId) || wallet.parentId === wallet.id)) {
+    throw new Error('The backup contains an invalid wallet group.')
+  }
+  const walletParents = new Map(wallets.map((wallet) => [wallet.id, wallet.parentId]))
+  for (const wallet of wallets) {
+    const visited = new Set([wallet.id])
+    let parentId = wallet.parentId
+    while (parentId) {
+      if (visited.has(parentId)) throw new Error('The backup contains a circular wallet group.')
+      visited.add(parentId)
+      parentId = walletParents.get(parentId)
+    }
+  }
   if (wallets.every((wallet) => wallet.archived)) throw new Error('At least one wallet must remain active.')
   const entryIds = new Set()
   const entries = input.entries.map((entry) => {

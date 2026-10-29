@@ -183,6 +183,14 @@ button:active:not(:disabled) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--in
 
 .section-head { margin: 34px 0 17px; }.section-head h2 { color: var(--ink); font-size: 18px; letter-spacing: -.4px; }.section-head p { color: var(--muted); font-size: 11px; }.section-head button { color: var(--indigo); min-height: 40px; }
 .wallet-grid { gap: 15px; }
+.wallet-tree { display: grid; gap: 16px; }
+.wallet-tree-node { min-width: 0; }
+.wallet-tree-toggle { display: inline-flex; align-items: center; gap: 7px; margin: 7px 0 0 16px; padding: 5px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer; }
+.wallet-tree-toggle:hover { background: var(--surface-soft); color: var(--ink); }
+.wallet-tree-toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.wallet-tree-children { display: grid; gap: 14px; margin: 14px 0 0 22px; padding-left: 18px; border-left: 1px solid var(--line); }
+.wallet-tree-children[hidden] { display: none; }
+.wallet-tree-children .wallet-card { max-width: 100%; }
 .wallet-card { --wallet-accent: #646464; position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 19px; padding: 19px; background: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--wallet-accent) 18%, transparent), transparent 51%), var(--surface); box-shadow: var(--shadow); transition: transform 200ms var(--ease), box-shadow 200ms var(--ease), border-color 200ms var(--ease); }
 .wallet-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--wallet-accent) 38%, var(--line)); box-shadow: 0 17px 36px rgba(47,47,47,.11); }
 .wallet-purple { --wallet-accent: #8c8c8c; }.wallet-teal { --wallet-accent: #969696; }.wallet-orange { --wallet-accent: #afafaf; }.wallet-blue { --wallet-accent: #a7a7a7; }
