@@ -68,7 +68,7 @@
 .receipt-line-total { padding-top: 8px; border-top: 1px solid var(--line); }.receipt-line-items small { line-height: 1.5; }
 .receipt-duplicate { border-style: dashed; border-color: var(--ink); }.receipt-duplicate p { margin: 0; }.receipt-duplicate label { display: flex; align-items: center; gap: 7px; color: var(--ink); cursor: pointer; }
 .receipt-fields { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-@media (max-width: 900px) { .receipt-layout { grid-template-columns: 1fr; }.receipt-folders, .receipt-records { padding: 18px; } }
+@media (max-width: 1100px) { .receipt-layout { grid-template-columns: 1fr; }.receipt-folders, .receipt-records { padding: 18px; } }
 @media (max-width: 600px) { .receipt-drive-panel { align-items: flex-start; flex-direction: column; }.receipt-summary { grid-template-columns: 1fr 1fr; }.receipt-records .receipt-panel-head, .receipt-add-row { flex-direction: column; }.receipt-folder-list { display: flex; overflow-x: auto; margin: 12px 0 0; padding-bottom: 4px; scroll-snap-type: x proximity; }.receipt-folder-list button { flex: 0 0 min(70vw, 210px); scroll-snap-align: start; }.receipt-fields, .receipt-crop-controls { grid-template-columns: 1fr; }.receipt-modal { max-height: 92dvh; }.receipt-scan-body { padding: 0 18px 24px; } }
 
 /* Structured procurement workspace */

@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "createdAt": "2026-10-29T11:21:13.652Z",
+        "reason": "Budsync's existing typography already uses Plus Jakarta Sans in App.css and ReceiptPage.css; this index.css token only exposes the existing font to Tailwind."
+      }
+    ]
+  }
+}

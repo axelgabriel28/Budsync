@@ -1,4 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) important;
+
+@theme inline {
+  --color-budsync-canvas: var(--canvas);
+  --color-budsync-surface: var(--surface);
+  --color-budsync-surface-soft: var(--surface-soft);
+  --color-budsync-ink: var(--ink);
+  --color-budsync-muted: var(--muted);
+  --color-budsync-line: var(--line);
+  --font-budsync: 'DM Sans', 'Segoe UI', sans-serif;
+  --font-budsync-display: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
 
 :root { font-family: 'DM Sans', 'Segoe UI', sans-serif; color: #191919; background: #ededed; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 * { box-sizing: border-box; }
