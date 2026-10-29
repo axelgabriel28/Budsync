@@ -119,6 +119,12 @@ function App() {
   const [theme, setTheme] = useState(() => {
     try { return localStorage.getItem('budsync-theme') === 'dark' ? 'dark' : 'light' } catch { return 'light' }
   })
+  const [startPage, setStartPage] = useState(() => {
+    try {
+      const savedPage = localStorage.getItem('budsync-start-page')
+      return navigation.some(([id]) => id === savedPage && id !== 'account') ? savedPage : 'overview'
+    } catch { return 'overview' }
+  })
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [balanceHidden, setBalanceHidden] = useState(false)
   const [chartRange, setChartRange] = useState(6)
@@ -141,7 +147,7 @@ function App() {
     ]),
   }), [data.entries, data.budgets])
   const accountId = session?.user.id
-  const [page, setPage] = useState(() => new URLSearchParams(window.location.search).get('page') === 'account' ? 'account' : 'overview')
+  const [page, setPage] = useState(() => new URLSearchParams(window.location.search).get('page') === 'account' ? 'account' : startPage)
   const [settingsSection, setSettingsSection] = useState(() => new URLSearchParams(window.location.search).get('page') === 'account' ? 'connections' : 'appearance')
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState(() => entryForm('expense', starterWallets))
@@ -185,6 +191,10 @@ function App() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#111111' : '#ececec')
     try { localStorage.setItem('budsync-theme', theme) } catch { /* Theme stays active for this visit. */ }
   }, [theme])
+
+  useEffect(() => {
+    try { localStorage.setItem('budsync-start-page', startPage) } catch { /* The preference stays active for this visit. */ }
+  }, [startPage])
 
   useEffect(() => {
     const updateConnection = () => setIsOnline(navigator.onLine)
@@ -958,6 +968,7 @@ function App() {
           {settingsSection === 'appearance' && <>
             <section className="data-card settings-card"><div className="settings-card-heading"><span className="settings-icon"><NavIcon name="sun" size={19} /></span><div><h2>Appearance</h2><p>Choose the look that feels comfortable for you.</p></div></div><div className="settings-choice-group" role="group" aria-label="Color theme"><button type="button" aria-pressed={theme === 'light'} className={theme === 'light' ? 'selected' : ''} onClick={() => setTheme('light')}><NavIcon name="sun" size={18} /><span><strong>Light</strong><small>Bright surfaces</small></span></button><button type="button" aria-pressed={theme === 'dark'} className={theme === 'dark' ? 'selected' : ''} onClick={() => setTheme('dark')}><NavIcon name="moon" size={18} /><span><strong>Dark</strong><small>Dim surfaces</small></span></button></div></section>
             <section className="data-card settings-card"><div className="settings-card-heading"><span className="settings-icon"><NavIcon name={balanceHidden ? 'eyeOff' : 'eye'} size={19} /></span><div><h2>Privacy on screen</h2><p>Hide money amounts when you want a little more privacy.</p></div></div><div className="settings-toggle-row"><span><strong>Hide balances</strong><small>Applies to dashboards, wallets, and reports.</small></span><button type="button" role="switch" aria-checked={balanceHidden} aria-label="Hide balances" className={'settings-switch' + (balanceHidden ? ' on' : '')} onClick={() => setBalanceHidden(!balanceHidden)}><span /></button></div></section>
+            <section className="data-card settings-card"><div className="settings-card-heading"><span className="settings-icon"><NavIcon name="overview" size={19} /></span><div><h2>Default page</h2><p>Choose where Budsync opens on this browser.</p></div></div><label className="settings-select-row"><span><strong>Open Budsync to</strong><small>Your choice is saved on this device.</small></span><select aria-label="Default page" value={startPage} onChange={(event) => setStartPage(event.target.value)}>{navigation.filter(([id]) => id !== 'account').map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label></section>
           </>}
           {settingsSection === 'connections' && <>
           <section className="data-card account-access"><h2>Account</h2>{authConfirmation && <p className="account-confirmation" role="status">{authConfirmation}</p>}{session ? <>
