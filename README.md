@@ -1,45 +1,103 @@
-# Budsync (In development phase)
+# Budsync
 
-Budsync is a phone-friendly finance tracker for managing money across multiple wallets. Record your activity in Philippine pesos, see where your money went, and keep a clear picture of each wallet's balance. Budsync does not connect to a bank or create transactions for you.
+Budsync is a phone-friendly, cloud-synced multi-wallet finance tracker designed for managing money in Philippine pesos. It helps you track wallet balances, income, expenses, transfers, adjustments, and receipt-linked spending without duplicating totals or storing stale balance data.
 
-[Open Budsync](https://budsync-6672e.web.app/)
+This project is still in active development. Use the release checklist before shipping changes to production, and treat any flow that has not been manually verified as unconfirmed.
 
-## What you can do
+Live app: https://budsync-6672e.web.app/
 
-- **Manage wallets.** Start with Personal, Organization, Savings, and E-Wallet, or add your own. Set opening balances; Budsync calculates current balances from those balances and your entries.
-- **Record money movement.** Add income, expenses, balance adjustments, and transfers between different wallets. Search and filter history, edit entries with a reason, and restore deleted entries. A transfer changes the two wallet balances without changing their combined total.
-- **Understand your finances.** The dashboard shows balances, monthly income and expenses, cash flow, spending categories, and recent activity. Insights includes category budgets and savings targets. These plans track progress; they do not move money.
-- **Keep receipts with expenses.** Take a photo or choose an image, adjust it if needed, and optionally read merchant, date, amount, and line items with on-device OCR. Confirm the details before saving. You can also record an amount now and attach its image later without deducting it twice.
-- **Use it on a phone.** Budsync has a responsive layout, light and dark themes, and an installable app shell. Main navigation, including Insights, is in the bottom bar; the header keeps theme and settings controls. Records remain available on the device while offline.
+## Why Budsync?
 
-## Your data
+Budsync is built for people who want a clear, mobile-first view of their money across multiple wallets and accounts. Instead of tracking balances separately from transactions, Budsync derives balances from opening balances and recorded activity, which keeps reports and totals consistent.
 
-Budsync saves wallet records and receipt images in your browser first. You can use it as a guest without an account. If you sign up or log in, Firebase syncs your wallet records across devices. Google Drive is a separate connection for receipt folders and images; the Receipts page shows whether an image is saved locally, waiting to upload, or in Drive.
+Key goals:
 
-You can download a JSON backup of wallet records or export transactions as CSV in **Settings → Data & backup**. Receipt images are not included in those exports or in Firebase account sync. Download important images individually or connect Google Drive before clearing browser data. If devices make conflicting account changes, Budsync asks you to choose which copy to keep.
+- Track multiple wallets with separate balances and activity
+- Record income, expenses, transfers, and balance adjustments
+- Keep reports based on real transactions instead of stored duplicate totals
+- Preserve local-first behavior for guests and offline use
+- Support optional Firebase sync and Google Drive receipt storage
+- Capture and reconcile receipts with expenses
 
-## Get started
+## Features
 
-1. Choose zero or sample opening balances when you first open Budsync. Sample balances are labeled for exploration.
-2. Add a wallet transaction. The form previews how the selected wallet balances will change before you save.
-3. Create a receipt folder if you want to scan or attach images to expenses.
-4. Open **Settings → Connections** when you want account sync or Google Drive receipt backup.
+- Wallet management with custom wallet types and opening balances
+- Income, expense, transfer, and balance-adjustment entries
+- Search, filtering, and transaction history review
+- Dashboard and Insights views for monthly activity, cash flow, categories, and savings goals
+- Receipt capture and OCR for merchant, date, amount, and line-item extraction
+- Local storage with optional Firebase account sync across devices
+- Google Drive receipt sync and backup/export workflows
+- Responsive phone-first layout with light and dark themes
 
-## Run locally
+## Data model and important notes
+
+Budsync is designed around wallet balances being derived from opening balances and recorded entries.
+
+Important rules in the app:
+
+- Wallet balances are calculated from opening balances plus the recorded activity for that wallet.
+- Combined totals are derived from the same underlying entries, not duplicated in storage.
+- Transfers between different wallets preserve the total combined balance.
+- Balance adjustments require a reason when the UI or data model requires it.
+- Sample opening balances are clearly labeled as samples.
+- Guest data is stored locally first; Firebase sync and Drive integration are optional features.
+- Receipt images are not included in wallet backups or account sync exports.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js
+- npm
+
+### Run locally
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open the URL printed by Vite. Copy `.env.example` to `.env.local` if you want to configure Firebase account sync or Google Drive on localhost. Google Drive requires a Google OAuth Web client whose authorized JavaScript origins include the local URL. The browser build uses the public client ID, never a client secret.
+Then open the local Vite URL shown in the terminal.
 
-## Check a change
+If you want to configure Firebase sync or Google Drive features on localhost, create a local environment file based on the project template (for example, copy `.env.example` to `.env.local`) and add the required values.
+
+## Project structure
+
+- `src/main.jsx` mounts the React app.
+- `src/App.jsx` contains the main navigation, dashboard, transaction flows, wallet management, Insights, and Settings.
+- `src/finance.js`, `src/data.js`, and `src/insights.js` handle financial calculations, validation, export logic, and insights.
+- `src/localStore.js` persists wallet workspaces locally.
+- `src/cloud.js`, `src/syncReview.js`, and `src/cloudSnapshot.js` support optional Firebase account sync and conflict review.
+- `src/ReceiptPage.jsx` and `src/receipt*.js` manage receipt capture, OCR, storage, reconciliation, and linking to wallet expenses.
+- `src/googleDrive*.js` implements optional Drive receipt sync.
+- `src/App.css`, `src/Fluid.css`, `src/ReceiptPage.css`, and `src/index.css` contain page, responsive, receipt, and global styling.
+- `public/` contains static assets, including the app shell and OCR assets.
+- `vite.config.js` configures Vite.
+- `eslint.config.js` configures ESLint.
+- `package.json` lists scripts and dependencies.
+
+## Available scripts
 
 ```sh
+npm install
+npm run dev
 npm test
 npm run lint
 npm run build
+npm run preview
 ```
 
-Use [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for phone, offline, receipt, and two-device checks before deploying.
+## Verifying changes
+
+For finance-related changes, follow the relevant automated tests and validate the affected wallet flows manually.
+
+Before release, use the manual checklist in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for wallets, balances, transfers, editing, delete/restore, filters, receipts, sync, backups, and phone layouts.
+
+## Contributing
+
+This project is still evolving. Keep changes focused, explain behavior clearly in code and UI, and avoid introducing duplicate stored balances or hidden financial data. Preserve local-first guest behavior and make optional cloud sync features clearly distinguishable from local-only data.
+
+## License
+
+This repository does not currently declare a license in the root project files. Check the repository settings or package metadata before redistributing or using the project in a production environment.
