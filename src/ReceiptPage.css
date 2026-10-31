@@ -40,12 +40,17 @@
 .receipt-items { display: grid; }
 .receipt-item { display: grid; grid-template-columns: 52px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid var(--line); }
 .receipt-item img { width: 52px; height: 65px; object-fit: cover; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+.receipt-thumbnail-button { display: block; padding: 0; border: 0; border-radius: 8px; background: transparent; line-height: 0; cursor: zoom-in; }
+.receipt-thumbnail-button:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
 .receipt-no-image { display: grid; place-items: center; width: 52px; height: 65px; border: 1px dashed var(--line); border-radius: 7px; background: var(--surface-soft); color: var(--muted); font: 700 20px Georgia, 'Times New Roman', serif; }
 .receipt-item-main { min-width: 0; display: grid; gap: 4px; }.receipt-item-main strong { color: var(--ink); font-size: 14px; }.receipt-item-main span, .receipt-item-main small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
 .receipt-item-amount { align-self: start; color: var(--ink); font: 700 13px 'Courier New', monospace; white-space: nowrap; }
 .receipt-item-actions { grid-column: 2 / 4; display: flex; gap: 12px; flex-wrap: wrap; }
 .receipt-item-actions button { min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: var(--ink); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .receipt-modal { width: min(100%, 740px); }.receipt-scan-body { display: grid; gap: 17px; padding: 0 27px 27px; }
+.receipt-viewer { width: min(100%, 940px); }
+.receipt-viewer-content { display: grid; place-items: center; padding: 0 24px 24px; }
+.receipt-viewer-content img { display: block; max-width: 100%; max-height: min(72vh, 900px); object-fit: contain; border-radius: 9px; }
 .receipt-capture-actions label { position: relative; cursor: pointer; }.receipt-capture-actions input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .receipt-capture-actions label:focus-within { outline: 3px solid var(--ink); outline-offset: 3px; }
 .receipt-adjustments { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); }

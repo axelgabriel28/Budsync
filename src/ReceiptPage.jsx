@@ -24,6 +24,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   const [editingFolder, setEditingFolder] = useState(false)
   const [showFolderForm, setShowFolderForm] = useState(false)
   const [scanOpen, setScanOpen] = useState(false)
+  const [viewingReceipt, setViewingReceipt] = useState(null)
   const [manualMode, setManualMode] = useState(false)
   const [editingReceipt, setEditingReceipt] = useState(null)
   const [receiptForm, setReceiptForm] = useState(blankReceipt)
@@ -179,7 +180,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
     setScanOpen(true)
     setManualMode(manual || Boolean(receipt && !receipt.blob))
     setEditingReceipt(receipt)
-    setReceiptForm(receipt ? { merchant: receipt.merchant, date: receipt.date, amount: String(receipt.amount), note: receipt.note || '', reason: '' } : blankReceipt())
+    setReceiptForm(receipt ? { merchant: receipt.merchant || '', date: receipt.date, amount: String(receipt.amount), note: receipt.note || '', reason: '' } : blankReceipt())
     setImage(receipt?.blob || null)
     setSavedBlob(receipt?.blob || null)
     setImageHash(receipt?.imageHash || '')
@@ -280,7 +281,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
     event.preventDefault()
     const merchant = receiptForm.merchant.trim()
     const amount = Number(receiptForm.amount)
-    if (!folder || (!manualMode && !savedBlob) || (sourceBlob && !savedBlob) || !merchant || !receiptForm.date || !Number.isFinite(amount) || amount <= 0 || Math.abs(Math.round(amount * 100) - amount * 100) > 1e-6) return setError('Confirm the merchant or description, date, and positive PHP amount. Prepare any selected image first.')
+    if (!folder || (!manualMode && !savedBlob) || (sourceBlob && !savedBlob) || !receiptForm.date || !Number.isFinite(amount) || amount <= 0 || Math.abs(Math.round(amount * 100) - amount * 100) > 1e-6) return setError('Confirm the date and positive PHP amount. Prepare any selected image first.')
     if (editingReceipt && !receiptForm.reason.trim()) return setError('Add a reason for the receipt edit.')
     if (duplicates.length && approvedDuplicateKey !== duplicateKey) return setError('This looks like a duplicate. Review the matching record and confirm if it is a separate expense.')
     const receipt = {
@@ -321,7 +322,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   }
 
   async function deleteReceipt(receipt) {
-    if (!window.confirm(`Delete the record from ${receipt.merchant}? Its wallet expense will be reversed.`)) return
+    if (!window.confirm(`Delete ${receipt.merchant || 'this receipt'}? Its wallet expense will be reversed.`)) return
     setBusy('Deleting receipt…')
     try {
       await removeReceipt(scope, receipt.id)
@@ -343,7 +344,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
     const url = URL.createObjectURL(receipt.blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${receipt.merchant.replace(/[^a-z0-9-]/gi, '_') || 'receipt'}-${receipt.date}.jpg`
+    link.download = `${receipt.merchant?.replace(/[^a-z0-9-]/gi, '_') || 'receipt'}-${receipt.date}.jpg`
     link.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
@@ -378,7 +379,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
             const active = entry && !entry.deletedAt
             const imageSynced = receipt.blob && receipt.driveSyncedRevision === (receipt.updatedAt || receipt.createdAt)
             const imageStatus = receipt.blob ? imageSynced ? 'Image in Google Drive' : driveConnected ? driveUploadError ? 'Upload needs retry' : driveBusy ? 'Uploading image…' : 'Waiting for Drive upload' : 'Image saved on this device' : 'No image yet'
-            return <article className="receipt-item" key={receipt.id}><ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} /><div className="receipt-item-main"><strong>{receipt.merchant}</strong><span>{receipt.date} · {active ? 'Wallet expense recorded' : 'Expense removed from history'}</span><small className={'receipt-image-status' + (receipt.blob && !imageSynced ? ' pending' : '')}>{imageStatus}</small>{receipt.scanned?.amount && receipt.scanned.amount !== (active ? entry.amount : receipt.amount) && <small>Scan read {displayMoney(receipt.scanned.amount)} · Confirmed {displayMoney(active ? entry.amount : receipt.amount)}</small>}{receipt.note && <small>{receipt.note}</small>}</div><strong className="receipt-item-amount">{active ? displayMoney(entry.amount) : '—'}</strong><div className="receipt-item-actions"><button type="button" onClick={() => openScanner(receipt)}>Edit / attach</button>{receipt.blob && <button type="button" onClick={() => downloadReceipt(receipt)}>Download</button>}{receipt.blob && !imageSynced && driveConnected && driveUploadError && <button type="button" disabled={driveBusy} onClick={() => onDriveSync()}>Retry upload</button>}<button type="button" onClick={() => deleteReceipt(receipt)}>Delete</button></div></article>
+            return <article className="receipt-item" key={receipt.id}>{receipt.blob ? <button className="receipt-thumbnail-button" type="button" aria-label={`View receipt image${receipt.merchant ? ` from ${receipt.merchant}` : ''}`} onClick={() => setViewingReceipt(receipt)}><ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} /></button> : <ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} />}<div className="receipt-item-main"><strong>{receipt.merchant || 'Receipt'}</strong><span>{receipt.date} · {active ? 'Wallet expense recorded' : 'Expense removed from history'}</span><small className={'receipt-image-status' + (receipt.blob && !imageSynced ? ' pending' : '')}>{imageStatus}</small>{receipt.scanned?.amount && receipt.scanned.amount !== (active ? entry.amount : receipt.amount) && <small>Scan read {displayMoney(receipt.scanned.amount)} · Confirmed {displayMoney(active ? entry.amount : receipt.amount)}</small>}{receipt.note && <small>{receipt.note}</small>}</div><strong className="receipt-item-amount">{active ? displayMoney(entry.amount) : '—'}</strong><div className="receipt-item-actions"><button type="button" onClick={() => openScanner(receipt)}>Edit / attach</button>{receipt.blob && <button type="button" onClick={() => downloadReceipt(receipt)}>Download</button>}{receipt.blob && !imageSynced && driveConnected && driveUploadError && <button type="button" disabled={driveBusy} onClick={() => onDriveSync()}>Retry upload</button>}<button type="button" onClick={() => deleteReceipt(receipt)}>Delete</button></div></article>
           })}</div> : <p className="receipt-empty-copy">No records yet. Add an amount now or capture a receipt to create an expense.</p>}
         </> : <div className="empty"><strong>Choose or create a folder</strong><p>Each folder connects its receipt expenses to one wallet.</p></div>}
       </section>
@@ -391,8 +392,9 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
         {scanned && <div className="receipt-comparison"><strong>Detected details · compare with the receipt</strong><span>Merchant: {scanned.merchant || 'Unclear'}</span><span>Date: {scanned.date || 'Unclear'}</span><span>Amount: {scanned.amount ? displayMoney(scanned.amount) : 'Unclear'}</span></div>}
         {scanned?.lineItems?.length > 0 && <div className="receipt-line-items"><strong>Detected line items</strong>{scanned.lineItems.map((item, index) => <div key={`${item.description}-${index}`}><span>{item.description}</span><b>{displayMoney(item.amount)}</b></div>)}<div className="receipt-line-total"><span>Items total</span><b>{displayMoney(scanned.lineItemTotal)}</b></div>{scanned.amount && <small>{Math.abs(scanned.amount - scanned.lineItemTotal) < .01 ? 'Items match the detected receipt total.' : `Items differ from the detected total by ${displayMoney(Math.abs(scanned.amount - scanned.lineItemTotal))}. Check discounts, tax, and OCR.`}</small>}</div>}
         {duplicates.length > 0 && <div className="receipt-duplicate" role="alert"><strong>Possible duplicate expense</strong><p>{duplicates.map((item) => `${item.merchant} · ${item.date} · ${displayMoney(item.amount)}`).join(' / ')}</p><label><input type="checkbox" checked={approvedDuplicateKey === duplicateKey} onChange={(event) => setApprovedDuplicateKey(event.target.checked ? duplicateKey : '')} /> I checked; this is a separate expense</label></div>}
-        <form className="receipt-detail-form" onSubmit={saveReceipt}><h3>Confirmed record</h3><div className="receipt-fields"><label>Merchant or description<input required maxLength="80" value={receiptForm.merchant} onChange={(event) => setReceiptForm({ ...receiptForm, merchant: event.target.value })} /></label><label>Date<input required type="date" value={receiptForm.date} onChange={(event) => setReceiptForm({ ...receiptForm, date: event.target.value })} /></label><label>Amount (PHP)<input required type="number" min="0.01" step="0.01" value={receiptForm.amount} onChange={(event) => setReceiptForm({ ...receiptForm, amount: event.target.value })} /></label><label>Note (optional)<input maxLength="300" value={receiptForm.note} onChange={(event) => setReceiptForm({ ...receiptForm, note: event.target.value })} /></label></div>{editingReceipt && <label>Reason for edit<textarea required rows="2" maxLength="300" value={receiptForm.reason} onChange={(event) => setReceiptForm({ ...receiptForm, reason: event.target.value })} /></label>}<div className="receipt-form-actions"><button className="primary" type="submit" disabled={Boolean(busy) || (!manualMode && !savedBlob) || Boolean(sourceBlob && !savedBlob) || Boolean(duplicates.length && approvedDuplicateKey !== duplicateKey)}>Save {editingReceipt ? 'changes' : 'expense'}</button><button className="secondary" type="button" onClick={() => { stopCamera(); setScanOpen(false) }}>Cancel</button></div></form>
+        <form className="receipt-detail-form" onSubmit={saveReceipt}><h3>Confirmed record</h3><div className="receipt-fields"><label>Merchant or description (optional)<input maxLength="80" value={receiptForm.merchant} onChange={(event) => setReceiptForm({ ...receiptForm, merchant: event.target.value })} /></label><label>Date<input required type="date" value={receiptForm.date} onChange={(event) => setReceiptForm({ ...receiptForm, date: event.target.value })} /></label><label>Amount (PHP)<input required type="number" min="0.01" step="0.01" value={receiptForm.amount} onChange={(event) => setReceiptForm({ ...receiptForm, amount: event.target.value })} /></label><label>Note (optional)<input maxLength="300" value={receiptForm.note} onChange={(event) => setReceiptForm({ ...receiptForm, note: event.target.value })} /></label></div>{editingReceipt && <label>Reason for edit<textarea required rows="2" maxLength="300" value={receiptForm.reason} onChange={(event) => setReceiptForm({ ...receiptForm, reason: event.target.value })} /></label>}<div className="receipt-form-actions"><button className="primary" type="submit" disabled={Boolean(busy) || (!manualMode && !savedBlob) || Boolean(sourceBlob && !savedBlob) || Boolean(duplicates.length && approvedDuplicateKey !== duplicateKey)}>Save {editingReceipt ? 'changes' : 'expense'}</button><button className="secondary" type="button" onClick={() => { stopCamera(); setScanOpen(false) }}>Cancel</button></div></form>
       </div></div></div>, document.body)}
+    {viewingReceipt && createPortal(<ReceiptViewer receipt={viewingReceipt} onClose={() => setViewingReceipt(null)} />, document.body)}
   </div>
 }
 
@@ -401,5 +403,22 @@ export default ReceiptPage
 function ReceiptThumbnail({ receipt }) {
   const [url] = useState(() => receipt.blob ? URL.createObjectURL(receipt.blob) : '')
   useEffect(() => () => { if (url) URL.revokeObjectURL(url) }, [url])
-  return url ? <img src={url} alt={`Receipt from ${receipt.merchant}`} /> : <span className="receipt-no-image" aria-label="No image attached">₱</span>
+  return url ? <img src={url} alt="" /> : <span className="receipt-no-image" aria-label="No image attached">₱</span>
+}
+
+function ReceiptViewer({ receipt, onClose }) {
+  const [url] = useState(() => URL.createObjectURL(receipt.blob))
+  useEffect(() => () => URL.revokeObjectURL(url), [url])
+  useEffect(() => {
+    const closeOnEscape = (event) => { if (event.key === 'Escape') onClose() }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [onClose])
+  const title = receipt.merchant || 'Receipt'
+  return <div className="modal-backdrop receipt-viewer-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+    <section className="modal receipt-viewer" role="dialog" aria-modal="true" aria-label={`${title} image`}>
+      <div className="modal-head"><div><div className="eyebrow">RECEIPT IMAGE</div><h2>{title}</h2><p>{receipt.date}</p></div><button type="button" aria-label="Close receipt viewer" onClick={onClose}>×</button></div>
+      <div className="receipt-viewer-content"><img src={url} alt={`${title} · ${receipt.date}`} /></div>
+    </section>
+  </div>
 }
