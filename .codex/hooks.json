@@ -1,5 +1,18 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/msys64/ucrt64/bin/python.exe \"C:/Users/axelc/Documents/My Neural Network/Automation/budsync_development_memory.py\" session-start",
+            "commandWindows": "\"C:\\msys64\\ucrt64\\bin\\python.exe\" \"C:\\Users\\axelc\\Documents\\My Neural Network\\Automation\\budsync_development_memory.py\" session-start",
+            "timeout": 5,
+            "statusMessage": "Loading concise local Budsync memory"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|apply_patch",
@@ -23,6 +36,17 @@
             "commandWindows": "cmd /c if exist \"C:\\Users\\axelc\\.agents\\skills\\impeccable\\scripts\\impeccable.cmd\" \"C:\\Users\\axelc\\.agents\\skills\\impeccable\\scripts\\impeccable.cmd\" hook",
             "timeout": 30,
             "statusMessage": "Design deep pass"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/msys64/ucrt64/bin/python.exe \"C:/Users/axelc/Documents/My Neural Network/Automation/budsync_development_memory.py\" stop",
+            "commandWindows": "\"C:\\msys64\\ucrt64\\bin\\python.exe\" \"C:\\Users\\axelc\\Documents\\My Neural Network\\Automation\\budsync_development_memory.py\" stop",
+            "timeout": 10,
+            "statusMessage": "Saving explicit Budsync development summary locally"
           }
         ]
       }

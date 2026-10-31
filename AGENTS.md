@@ -41,19 +41,23 @@ For finance changes, run the relevant automated tests and check the affected flo
 
 Before modifying files, explain the intended change in plain language, name the likely files, and say how you will check the result. Keep changes focused and understandable to a beginner. Do not add or run tests unless the user asks for testing or verification; when asked to verify, use the relevant scripts above and report what ran.
 
-## graphify
+## Graphify and local memory
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+Budsync's generated files live outside this Git repository:
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+- Graphify graph: `C:\Users\axelc\Documents\My Neural Network\Graphify Data\Budsync\graph.json`
+- Obsidian code graph: `C:\Users\axelc\Documents\My Neural Network\Knowledge Vault\01 - Projects\Budsync\Code Graph\`
+- Concise project memory: `C:\Users\axelc\Documents\My Neural Network\Knowledge Vault\01 - Projects\Budsync\Development Memory Index.md`
 
-Rules:
-- When graphify-out/graph.json exists, run `graphify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-- A committed graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+When the user types `/graphify`, use the installed Graphify instructions before doing anything else. Before the first raw source search/read for a codebase question, run `graphify query "<question>" --graph "C:/Users/axelc/Documents/My Neural Network/Graphify Data/Budsync/graph.json" --budget 800`. Read source only where the graph points or where earlier inspection identified relevant lines. Use `graphify path` and `graphify explain` with the same `--graph` path for focused relationships. `GRAPH_REPORT.md` is a preserved historical snapshot; use the graph JSON for current code relationships.
+
+The local event watcher refreshes the graph after relevant file changes. For an immediate update, run `powershell.exe -NoProfile -File "C:\Users\axelc\Documents\My Neural Network\Automation\update-budsync-graphify.ps1"`. It uses an external output path and `--no-cluster`; do not run `graphify update .` from this checkout.
+
+Graphify excludes `node_modules`, `.git`, `dist`, `build`, temporary files, `.env*`, and `public/ocr` using built-in ignores and `.graphifyignore`. Keep Graphify output and Obsidian exports outside this repository.
+
+Historical notes are retrieved on demand with `C:\msys64\ucrt64\bin\python.exe "C:\Users\axelc\Documents\My Neural Network\Automation\budsync_memory_index.py" search "<topic>"`. This local SQLite full-text search returns up to two matching excerpts and makes no AI/API calls.
+
+SessionStart loads only the concise Development Memory Index. The memory Stop hook stores only a final `## Development Summary`; it does not read transcripts, save full conversations, or launch Codex.
 
 ## Development memory
 

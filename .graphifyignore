@@ -1,0 +1,22 @@
+# Generated or dependency files that do not help explain application code.
+node_modules/
+.git/
+dist/
+build/
+coverage/
+tmp/
+temp/
+.tmp/
+.firebase/
+graphify-out/
+public/ocr/
+
+# Secrets and local/temporary files.
+.env
+.env.*
+*.zip
+*.tmp
+*.temp
+*.bak
+*.swp
+~$*

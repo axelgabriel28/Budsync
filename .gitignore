@@ -10,6 +10,14 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+build
+coverage
+graphify-out/
+.tmp/
+tmp/
+temp/
+*.tmp
+*.temp
 *.local
 
 # Editor directories and files
