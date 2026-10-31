@@ -125,3 +125,58 @@
   .receipt-drive-panel { border-left-width: 3px; }
   .receipt-item { padding-inline: 2px; }
 }
+
+@media (max-width: 820px) {
+  .receipt-local-note, .receipt-drive-panel p, .receipt-empty-copy { font-size: 15px; line-height: 1.55; }
+  .receipt-drive-panel { gap: 16px; padding: 18px; }
+  .receipt-drive-panel strong { font-size: 16px; }
+  .receipt-drive-panel small { font-size: 13px; }
+  .receipt-drive-actions button, .drive-folder-link { min-height: 48px; font-size: 14px; }
+  .receipt-layout { gap: 16px; }
+  .receipt-folders, .receipt-records { padding: 20px; }
+  .receipt-panel-head h2, .receipt-add-row h3 { font-size: 21px; }
+  .receipt-panel-head p { font-size: 14px; line-height: 1.5; }
+  .receipt-folder-list { gap: 9px; }
+  .receipt-folder-list button { min-height: 62px; padding: 14px; }
+  .receipt-folder-list strong { font-size: 15px; }
+  .receipt-folder-list small { font-size: 13px; }
+  .receipt-folder-form, .receipt-detail-form { gap: 15px; }
+  .receipt-folder-form h3, .receipt-detail-form h3 { font-size: 19px; }
+  .receipt-folder-form label, .receipt-detail-form label { gap: 8px; font-size: 14px; }
+  .receipt-folder-form input, .receipt-folder-form select, .receipt-folder-form textarea,
+  .receipt-detail-form input, .receipt-detail-form textarea { min-height: 48px; padding: 11px 13px; font-size: 16px; }
+  .receipt-form-actions button, .receipt-toolbar button { min-height: 48px; padding-inline: 14px; font-size: 14px; }
+  .receipt-summary { gap: 12px; }
+  .receipt-summary > div { gap: 9px; padding: 18px; }
+  .receipt-summary small { font-size: 12px; }
+  .receipt-summary strong { font-size: 20px; }
+  .receipt-summary .receipt-budget-summary p { font-size: 13px; }
+  .receipt-summary .receipt-budget-edit { min-height: 42px; font-size: 13px; }
+  .receipt-add-row { gap: 12px; padding-block: 18px; }
+  .receipt-item { grid-template-columns: 60px minmax(0,1fr) auto; gap: 12px; padding-block: 16px; }
+  .receipt-item img, .receipt-no-image { width: 60px; height: 76px; }
+  .receipt-item-main { gap: 6px; }
+  .receipt-item-main strong { font-size: 16px; }
+  .receipt-item-main span, .receipt-item-main small { font-size: 13px; line-height: 1.45; }
+  .receipt-item-amount { font-size: 14px; }
+  .receipt-item-actions { gap: 8px 14px; }
+  .receipt-item-actions button { min-height: 46px; font-size: 14px; }
+  .receipt-image-status, .receipt-status { font-size: 13px; }
+  .receipt-comparison, .receipt-line-items, .receipt-duplicate { padding: 16px; font-size: 13px; line-height: 1.5; }
+  .receipt-comparison strong, .receipt-line-items > strong, .receipt-duplicate > strong { font-size: 14px; }
+  .receipt-adjustments summary { min-height: 42px; display: flex; align-items: center; font-size: 15px; }
+  .receipt-image-options label { font-size: 14px; }
+  .receipt-scan-body { gap: 18px; }
+  .receipt-preview img { max-height: 42vh; }
+}
+
+@media (max-width: 600px) {
+  .receipt-records, .receipt-folders { padding: 18px; }
+  .receipt-folder-list button { flex-basis: min(76vw, 260px); }
+  .receipt-summary { grid-template-columns: 1fr 1fr; }
+  .receipt-summary strong { font-size: 18px; }
+  .receipt-item { grid-template-columns: 60px minmax(0,1fr); }
+  .receipt-item-amount { grid-column: 2; grid-row: 2; }
+  .receipt-item-actions { grid-column: 2; }
+  .receipt-viewer-content { padding: 0 16px 18px; }
+}

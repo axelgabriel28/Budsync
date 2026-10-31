@@ -226,3 +226,94 @@
   .overview-wallet-grid .wallet-card > strong { max-width: 112px; font-size: 14px; }
   .overview-summary .metric strong { font-size: 15px; }
 }
+
+/* Phone-first type and controls: comfortable reading without desktop zoom. */
+@media (max-width: 820px) {
+  body { font-size: 16px; }
+  .sidebar, .sidebar-compact .sidebar { height: 72px; min-height: 72px; }
+  .sidebar-top, .brand, .sidebar-compact .brand { height: 72px; min-height: 72px; }
+  .brand-word { font-size: 19px; }
+  .mobile-header-actions { gap: 10px; padding-right: 16px; }
+  .mobile-header-actions button { width: 46px; height: 46px; }
+  .mobile-header-actions button svg { width: 22px; height: 22px; }
+  .mobile-dock { height: 82px; padding: 6px; }
+  .mobile-dock button { min-height: 68px; gap: 5px; font-size: 13px; }
+  .mobile-dock button svg { width: 22px; height: 22px; }
+  .mobile-dock button.dock-add { width: 62px; height: 62px; min-height: 62px; }
+  .mobile-dock button.dock-add svg { width: 25px; height: 25px; }
+  .mobile-dock button.dock-add span { font-size: 11px; }
+  .content { padding: 26px 20px calc(132px + env(safe-area-inset-bottom)); }
+  .page-head { gap: 12px; margin-bottom: 24px; }
+  .page-head h1 { font-size: 31px; line-height: 1.18; }
+  .page-head p, .data-card p, .section-head p, .hero-main p { font-size: 15px; line-height: 1.55; }
+  .eyebrow, .widget-kicker { font-size: 12px; }
+  .section-head h2 { font-size: 21px; }
+  .section-head button { min-height: 46px; font-size: 14px; }
+  .history-head h2 { font-size: 19px; }
+  .history-head p { font-size: 14px; line-height: 1.5; }
+  .filters { gap: 14px; padding: 18px; }
+  .filters label { gap: 7px; font-size: 14px; }
+  .filters input, .filters select { min-height: 48px; height: auto; padding: 0 12px; font-size: 16px; }
+  .filters button { min-height: 48px; height: auto; font-size: 14px; }
+  .row-actions { gap: 6px; }
+  .row-actions button { min-height: 44px; padding: 7px 6px; font-size: 13px; }
+  .notice-banner, .error-banner, .sample-banner, .form-error { padding: 14px 16px; font-size: 14px; line-height: 1.5; }
+  .sample-banner button { min-height: 44px; font-size: 13px; }
+  .balance-hero { min-height: 220px; padding: 25px; }
+  .hero-amount strong, .balance-hero strong { font-size: 36px; }
+  .hero-action { min-height: 48px; padding: 10px 16px; font-size: 14px; }
+  .overview-summary .metric { min-height: 106px; padding: 18px; gap: 12px; }
+  .overview-summary .metric-icon { width: 42px; height: 42px; flex-basis: 42px; }
+  .overview-summary .metric strong { font-size: 20px; }
+  .overview-summary .metric small, .metric small { font-size: 13px; line-height: 1.45; }
+  .wallet-card { padding: 18px; }
+  .wallet-card h3 { font-size: 16px; }
+  .wallet-balance-label, .wallet-type { font-size: 13px; }
+  .wallet-card > strong { font-size: 19px; }
+  .wallet-actions { gap: 8px; }
+  .wallet-actions button, .overview-wallet-grid .wallet-actions button { min-height: 46px; padding: 0 12px; font-size: 13px; }
+  .transaction { min-height: 80px; padding: 15px 14px; gap: 12px; }
+  .transaction-icon { width: 42px; height: 42px; flex-basis: 42px; }
+  .transaction-info strong, .transaction-amount strong { font-size: 15px; }
+  .transaction-info span, .transaction-info small, .transaction-amount span { font-size: 13px; line-height: 1.4; }
+  .quick-actions button { min-height: 58px; padding: 14px 12px; }
+  .quick-actions strong { font-size: 15px; }
+  .quick-actions small { display: block; font-size: 13px; line-height: 1.4; }
+  .mobile-sync-pill { margin-bottom: 18px; padding: 9px 13px; font-size: 12px; }
+  .data-card { padding: 20px; }
+  .data-card h2 { font-size: 19px; }
+  .data-card p, .report-note { font-size: 14px; }
+  .report-row, .report-wallet-row strong { font-size: 14px; }
+  .report-row strong, .report-wallet-row span { font-size: 13px; }
+  .settings-tabs button, .auth-tabs button { min-height: 48px; font-size: 14px; }
+  .settings-choice-group strong, .settings-select-row strong, .settings-toggle-row strong { font-size: 14px; }
+  .settings-choice-group small, .settings-select-row small, .settings-toggle-row small { font-size: 13px; }
+  .primary, .secondary, .button-row button { min-height: 48px; font-size: 14px; }
+  .form-fields input, .form-fields select, .form-fields textarea,
+  .auth-form input, .report-month input { min-height: 48px; font-size: 16px; }
+  .form-fields label, .auth-form label { font-size: 14px; }
+  .modal-head { padding: 22px 22px 18px; }
+  .modal-head h2 { font-size: 23px; }
+  .modal-head p { font-size: 14px; line-height: 1.5; }
+}
+
+@media (max-width: 600px) {
+  .content { padding-left: 18px; padding-right: 18px; }
+  .hero-main p { font-size: 15px; }
+  .overview-summary .metric strong { font-size: 19px; }
+  .overview-wallet-grid .wallet-card { grid-template-columns: 48px minmax(0,1fr) auto; gap: 4px 12px; padding: 17px; }
+  .overview-wallet-grid .wallet-icon { width: 46px; height: 46px; }
+  .overview-wallet-grid .wallet-card h3 { font-size: 16px; }
+  .overview-wallet-grid .wallet-balance-label { font-size: 13px; }
+  .overview-wallet-grid .wallet-card > strong { max-width: 150px; font-size: 18px; }
+  .chart-card, .spending-card { padding: 20px; }
+}
+
+@media (max-width: 380px) {
+  .content { padding-left: 15px; padding-right: 15px; }
+  .page-head h1 { font-size: 29px; }
+  .mobile-dock { left: 8px; right: 8px; }
+  .mobile-dock button { font-size: 12px; }
+  .transaction { grid-template-columns: 38px minmax(0,1fr) auto; gap: 9px; padding-inline: 11px; }
+  .transaction-amount { min-width: 80px; }
+}
