@@ -1,4 +1,4 @@
-const cacheName = 'budsync-shell-v13'
+const cacheName = 'budsync-shell-v15'
 const shellFiles = [
   '/', '/index.html', '/welcome', '/manifest.webmanifest',
   '/Budsync_Light_Icon_Transparent.png',

@@ -14,7 +14,7 @@ const fullCrop = { left: 0, right: 100, top: 0, bottom: 100 }
 const makeId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
 const blankReceipt = () => ({ merchant: '', date: today(), amount: '', note: '', reason: '' })
 
-function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemoved, onFolderWalletChanged, onDriveSync, onConnectDrive, driveConnected, driveFolderUrl, driveAvailable, driveBusy, driveStatus, driveUploadError, driveLastSyncedAt, onOpenSettings, refreshKey, addReceiptRequest = 0, hidden }) {
+function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemoved, onFolderWalletChanged, onDriveSync, onRestoreReceiptImage, onConnectDrive, driveConnected, driveFolderUrl, driveAvailable, driveBusy, driveStatus, driveUploadError, driveLastSyncedAt, onOpenSettings, refreshKey, addReceiptRequest = 0, hidden }) {
   const displayMoney = (value) => hidden ? '₱ ••••••' : php(value)
   const [folders, setFolders] = useState([])
   const [foldersLoaded, setFoldersLoaded] = useState(false)
@@ -25,6 +25,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   const [showFolderForm, setShowFolderForm] = useState(false)
   const [scanOpen, setScanOpen] = useState(false)
   const [viewingReceipt, setViewingReceipt] = useState(null)
+  const [viewBusyId, setViewBusyId] = useState('')
   const [manualMode, setManualMode] = useState(false)
   const [editingReceipt, setEditingReceipt] = useState(null)
   const [receiptForm, setReceiptForm] = useState(blankReceipt)
@@ -340,6 +341,21 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
     finally { setBusy('') }
   }
 
+  async function viewReceipt(receipt) {
+    if (receipt.blob) {
+      setViewingReceipt(receipt)
+      return
+    }
+    setViewBusyId(receipt.id)
+    setError('')
+    try {
+      const loaded = await onRestoreReceiptImage(receipt)
+      if (!loaded?.blob) throw new Error('No image copy was found for this receipt.')
+      setViewingReceipt(loaded)
+    } catch (cause) { setError(`Receipt image could not be loaded: ${cause.message}`) }
+    finally { setViewBusyId('') }
+  }
+
   function downloadReceipt(receipt) {
     if (!receipt.blob) return
     const url = URL.createObjectURL(receipt.blob)
@@ -379,9 +395,11 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
           {folderReceipts.length ? <div className="receipt-items">{folderReceipts.map((receipt) => {
             const entry = entryById.get(receipt.entryId)
             const active = entry && !entry.deletedAt
-            const imageSynced = receipt.blob && receipt.driveSyncedRevision === (receipt.updatedAt || receipt.createdAt)
-            const imageStatus = receipt.blob ? imageSynced ? 'Image in Google Drive' : driveConnected ? driveUploadError ? 'Upload needs retry' : driveBusy ? 'Uploading image…' : 'Waiting for Drive upload' : 'Image saved on this device' : 'No image yet'
-            return <article className="receipt-item" key={receipt.id}>{receipt.blob ? <button className="receipt-thumbnail-button" type="button" aria-label={`View receipt image${receipt.merchant ? ` from ${receipt.merchant}` : ''}`} onClick={() => setViewingReceipt(receipt)}><ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} /></button> : <ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} />}<div className="receipt-item-main"><strong>{receipt.merchant || 'Receipt'}</strong><span>{receipt.date} · {active ? 'Wallet expense recorded' : 'Expense removed from history'}</span><small className={'receipt-image-status' + (receipt.blob && !imageSynced ? ' pending' : '')}>{imageStatus}</small>{receipt.scanned?.amount && receipt.scanned.amount !== (active ? entry.amount : receipt.amount) && <small>Scan read {displayMoney(receipt.scanned.amount)} · Confirmed {displayMoney(active ? entry.amount : receipt.amount)}</small>}{receipt.note && <small>{receipt.note}</small>}</div><strong className="receipt-item-amount">{active ? displayMoney(entry.amount) : '—'}</strong><div className="receipt-item-actions"><button type="button" onClick={() => openScanner(receipt)}>Edit / attach</button>{receipt.blob && <button type="button" onClick={() => downloadReceipt(receipt)}>Download</button>}{receipt.blob && !imageSynced && driveConnected && driveUploadError && <button type="button" disabled={driveBusy} onClick={() => onDriveSync()}>Retry upload</button>}<button type="button" onClick={() => deleteReceipt(receipt)}>Delete</button></div></article>
+            const imageRevision = receipt.updatedAt || receipt.createdAt
+            const imageSynced = Boolean(imageRevision && receipt.driveSyncedRevision === imageRevision)
+            const imageAvailable = Boolean(receipt.blob || imageSynced || driveConnected)
+            const imageStatus = receipt.blob ? imageSynced ? 'Image in Google Drive' : driveConnected ? driveUploadError ? 'Upload needs retry' : driveBusy ? 'Uploading image…' : 'Waiting for Drive upload' : 'Image saved on this device' : imageSynced ? 'Image in Google Drive · select to view online' : driveConnected ? 'Check Google Drive for image' : 'No image yet'
+            return <article className="receipt-item" key={receipt.id}>{imageAvailable ? <button className="receipt-thumbnail-button" type="button" disabled={viewBusyId === receipt.id || (!receipt.blob && driveBusy)} aria-label={`${viewBusyId === receipt.id ? 'Loading' : 'View'} receipt image${receipt.merchant ? ` from ${receipt.merchant}` : ''}`} onClick={() => viewReceipt(receipt)}><ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} /></button> : <ReceiptThumbnail key={`${receipt.id}:${receipt.updatedAt}`} receipt={receipt} />}<div className="receipt-item-main"><strong>{receipt.merchant || 'Receipt'}</strong><span>{receipt.date} · {active ? 'Wallet expense recorded' : 'Expense removed from history'}</span><small className={'receipt-image-status' + ((receipt.blob && !imageSynced) || (!receipt.blob && !imageSynced && driveConnected) ? ' pending' : '')}>{viewBusyId === receipt.id ? 'Loading image from Google Drive…' : imageStatus}</small>{receipt.scanned?.amount && receipt.scanned.amount !== (active ? entry.amount : receipt.amount) && <small>Scan read {displayMoney(receipt.scanned.amount)} · Confirmed {displayMoney(active ? entry.amount : receipt.amount)}</small>}{receipt.note && <small>{receipt.note}</small>}</div><strong className="receipt-item-amount">{active ? displayMoney(entry.amount) : '—'}</strong><div className="receipt-item-actions"><button type="button" onClick={() => openScanner(receipt)}>Edit / attach</button>{receipt.blob && <button type="button" onClick={() => downloadReceipt(receipt)}>Download</button>}{receipt.blob && !imageSynced && driveConnected && driveUploadError && <button type="button" disabled={driveBusy} onClick={() => onDriveSync()}>Retry upload</button>}<button type="button" onClick={() => deleteReceipt(receipt)}>Delete</button></div></article>
           })}</div> : <p className="receipt-empty-copy">No records yet. Add an amount now or capture a receipt to create an expense.</p>}
         </> : <div className="empty"><strong>Choose or create a folder</strong><p>Each folder connects its receipt expenses to one wallet.</p></div>}
       </section>

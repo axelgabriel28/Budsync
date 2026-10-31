@@ -12,7 +12,7 @@ import { moveReceiptExpenses, removeReceiptExpenses, upsertReceiptExpense } from
 import { listDriveDeletes, listReceiptFolders, listReceipts, markReceiptDriveSynced, pruneReceiptCache } from './receiptStore.js'
 import { reconcileReceiptData } from './receiptReconcile.js'
 import { connectGoogleDrive, googleClientId, loadGoogleIdentity } from './googleDrive.js'
-import { restoreFromDrive, syncToDrive } from './googleDriveSync.js'
+import { loadReceiptImageFromDrive, restoreFromDrive, syncToDrive } from './googleDriveSync.js'
 import './App.css'
 import './Fluid.css'
 import './Concept.css'
@@ -944,6 +944,33 @@ function App() {
     finally { driveLock.current = false; setDriveBusy(false) }
   }
 
+  async function loadReceiptImage(receipt) {
+    const current = driveSessionRef.current
+    if (!current) throw new Error('Connect Google Drive to restore this receipt image.')
+    if (Date.now() >= current.expiresAt - 30000) {
+      driveSessionRef.current = null
+      setDriveSession(null)
+      throw new Error('Reconnect Google Drive, then try viewing this image again.')
+    }
+    if (driveLock.current) throw new Error('Google Drive is syncing. Wait a moment, then try again.')
+
+    driveLock.current = true
+    setDriveBusy(true)
+    setDriveStatus('Loading receipt image from Google Drive…')
+    try {
+      const blob = await loadReceiptImageFromDrive(current.token, current.scope, workspaceRef.current.data.wallets, receipt.id, receipt.folderId)
+      setDriveStatus('Receipt image loaded from Google Drive for viewing. It was not saved on this device.')
+      return { ...receipt, blob }
+    } catch (cause) {
+      setDriveStatus(`Receipt image could not be loaded: ${cause.message}`)
+      throw cause
+    } finally {
+      driveLock.current = false
+      setDriveBusy(false)
+      if (drivePending.current) { drivePending.current = false; uploadReceipts() }
+    }
+  }
+
   if (loading) return <div className="loading-screen" role="status">Loading your Budsync records…</div>
 
   if (!data.setupComplete && saveAllowed) return <div className="setup-screen"><section className="setup-card"><span className="widget-kicker">WELCOME TO BUDSYNC</span><h1>Set up your wallets</h1><p>Choose how the four starter wallets should begin. You can edit their opening balances later. This choice does not add any transactions.</p><div className="setup-options"><button type="button" onClick={() => editData((current) => ({ ...current, setupComplete: true, sampleBalances: false }))}><strong>Start at ₱0</strong><span>Use your real opening balances when you are ready.</span></button><button type="button" onClick={() => editData((current) => ({ ...current, wallets: starterWallets.map((wallet) => ({ ...wallet })), setupComplete: true, sampleBalances: true }))}><strong>Explore with sample balances</strong><span>Try Personal ₱1,000, Organization ₱500, and Savings ₱300.</span></button></div></section><PolicyLinks /></div>
@@ -1002,7 +1029,7 @@ function App() {
 
         {page === 'reports' && <Reports report={report} month={reportMonth} onMonth={setReportMonth} budgets={data.budgets || []} goals={data.goals || []} wallets={data.wallets} balances={balances} hidden={balanceHidden} categoryOptions={categoryOptions} onAddBudget={addBudget} onRemoveBudget={removeBudget} onAddGoal={addGoal} onRemoveGoal={removeGoal} />}
 
-        {page === 'receipts' && <Suspense fallback={<div className="loading-screen" role="status">Loading receipts…</div>}><ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} addReceiptRequest={receiptAddRequest} hidden={balanceHidden} /></Suspense>}
+        {page === 'receipts' && <Suspense fallback={<div className="loading-screen" role="status">Loading receipts…</div>}><ReceiptPage scope={scope} wallets={data.wallets} entries={data.entries} onExpenseSaved={saveReceiptExpense} onExpensesRemoved={reverseReceiptExpenses} onFolderWalletChanged={changeReceiptFolderWallet} onDriveSync={requestReceiptDriveSync} onRestoreReceiptImage={loadReceiptImage} onConnectDrive={connectDrive} driveConnected={Boolean(driveSession)} driveFolderUrl={driveFolderUrl} driveAvailable={Boolean(googleClientId)} driveBusy={driveBusy} driveStatus={driveStatus} driveUploadError={driveUploadError} driveLastSyncedAt={driveLastSyncedAt} onOpenSettings={() => { setSettingsSection('connections'); setPage('account') }} refreshKey={receiptRefresh} addReceiptRequest={receiptAddRequest} hidden={balanceHidden} /></Suspense>}
 
         {page === 'account' && <div className="data-page">
           <div className="page-head"><div><div className="eyebrow">YOUR SPACE</div><h1>Settings</h1><p>Personalize Budsync, manage your account, and control your data.</p></div></div>

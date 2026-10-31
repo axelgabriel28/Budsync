@@ -43,6 +43,7 @@
 .receipt-item { display: grid; grid-template-columns: 52px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid var(--line); }
 .receipt-item img { width: 52px; height: 65px; object-fit: cover; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
 .receipt-thumbnail-button { display: block; padding: 0; border: 0; border-radius: 8px; background: transparent; line-height: 0; cursor: zoom-in; }
+.receipt-thumbnail-button:disabled { opacity: .65; cursor: wait; }
 .receipt-thumbnail-button:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; }
 .receipt-no-image { display: grid; place-items: center; width: 52px; height: 65px; border: 1px dashed var(--line); border-radius: 7px; background: var(--surface-soft); color: var(--muted); font: 700 20px Georgia, 'Times New Roman', serif; }
 .receipt-item-main { min-width: 0; display: grid; gap: 4px; }.receipt-item-main strong { color: var(--ink); font-size: 14px; }.receipt-item-main span, .receipt-item-main small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }

@@ -136,6 +136,22 @@ export async function restoreFromDrive(token, scope, wallets, entryIds = null, s
   return { folders: folderCount, receipts: restored.length, skipped, restored, deletedEntryIds }
 }
 
+export async function loadReceiptImageFromDrive(token, scope, wallets, receiptId, folderId) {
+  const root = await rootFor(token, scope, false)
+  if (!root) throw new Error('No Budsync folder was found in Google Drive.')
+  const remote = await inventory(token, root)
+  const walletIds = new Set(wallets.map((wallet) => wallet.id))
+  for (const wallet of remote.wallets) {
+    if (!walletIds.has(idOf(wallet))) continue
+    const folders = (remote.children.get(wallet.id) || []).filter((file) => kind(file, 'folder') && (!folderId || idOf(file) === folderId))
+    for (const folder of folders) {
+      const image = match(await listChildren(token, folder.id), 'receiptImage', receiptId)
+      if (image) return downloadFile(token, image.id)
+    }
+  }
+  throw new Error('No image copy was found in Google Drive for this receipt.')
+}
+
 export async function syncToDrive(token, scope, wallets, storage = receiptStorage) {
   const root = await rootFor(token, scope, true)
   const remote = await inventory(token, root)
