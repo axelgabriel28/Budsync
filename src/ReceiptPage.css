@@ -35,6 +35,8 @@
 .receipt-summary > div { min-width: 0; display: grid; gap: 7px; padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-soft); }
 .receipt-summary small { color: var(--muted); font: 700 10px 'Courier New', monospace; text-transform: uppercase; }
 .receipt-summary strong { color: var(--ink); font: 700 clamp(14px, 1.8vw, 20px) 'Courier New', monospace; overflow-wrap: anywhere; }
+.receipt-summary .receipt-budget-summary p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; }
+.receipt-summary .receipt-budget-edit { min-height: 32px; justify-self: start; padding: 0 9px; font-size: 11px; }
 .receipt-add-row { align-items: center; padding: 16px 0; border-top: 1px solid var(--line); }
 .receipt-add-row h3 { font-size: 17px; }
 .receipt-items { display: grid; }

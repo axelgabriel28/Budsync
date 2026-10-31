@@ -20,7 +20,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   const [foldersLoaded, setFoldersLoaded] = useState(false)
   const [receipts, setReceipts] = useState([])
   const [folderId, setFolderId] = useState('')
-  const [folderForm, setFolderForm] = useState({ name: '', walletId: '', budget: '', reason: '' })
+  const [folderForm, setFolderForm] = useState({ name: '', walletId: '', budget: '', budgetNote: '', reason: '' })
   const [editingFolder, setEditingFolder] = useState(false)
   const [showFolderForm, setShowFolderForm] = useState(false)
   const [scanOpen, setScanOpen] = useState(false)
@@ -225,12 +225,13 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
     event.preventDefault()
     const name = folderForm.name.trim()
     const budget = folderForm.budget === '' ? null : Number(folderForm.budget)
+    const budgetNote = folderForm.budgetNote.trim().slice(0, 300)
     if (!name || name.length > 60 || !wallets.some((wallet) => wallet.id === folderForm.walletId && (!wallet.archived || (editingFolder && folder.walletId === wallet.id)))) return setError('Enter a folder name and choose an active wallet.')
     if (budget !== null && (!Number.isFinite(budget) || budget <= 0 || Math.abs(Math.round(budget * 100) - budget * 100) > 1e-6)) return setError('The optional budget must be a positive PHP amount.')
     if (editingFolder && !folderForm.reason.trim()) return setError('Add a reason for the folder change.')
     if (folders.some((item) => item.id !== (editingFolder ? folderId : '') && item.name.toLowerCase() === name.toLowerCase())) return setError('A folder with this name already exists.')
-    const next = editingFolder ? { ...folder, name, walletId: folderForm.walletId, budget, updatedAt: new Date().toISOString() }
-      : { id: makeId(), name, walletId: folderForm.walletId, budget, createdAt: new Date().toISOString(), updatedAt: null }
+    const next = editingFolder ? { ...folder, name, walletId: folderForm.walletId, budget, budgetNote, updatedAt: new Date().toISOString() }
+      : { id: makeId(), name, walletId: folderForm.walletId, budget, budgetNote, createdAt: new Date().toISOString(), updatedAt: null }
     setBusy('Saving folder…')
     try {
       await putReceiptFolder(scope, next)
@@ -241,7 +242,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
       await reload()
       onDriveSync()
       setFolderId(next.id)
-      setFolderForm({ name: '', walletId: '', budget: '', reason: '' })
+      setFolderForm({ name: '', walletId: '', budget: '', budgetNote: '', reason: '' })
       setEditingFolder(false)
       setShowFolderForm(false)
       setNotice(editingFolder ? 'Folder updated.' : 'Folder created. Add a receipt to record an expense.')
@@ -253,7 +254,7 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
   function beginFolderEdit() {
     setEditingFolder(true)
     setShowFolderForm(true)
-    setFolderForm({ name: folder.name, walletId: folder.walletId, budget: folder.budget === null ? '' : String(folder.budget), reason: '' })
+    setFolderForm({ name: folder.name, walletId: folder.walletId, budget: folder.budget === null ? '' : String(folder.budget), budgetNote: folder.budgetNote || '', reason: '' })
     setError('')
   }
 
@@ -358,21 +359,22 @@ function ReceiptPage({ scope, wallets, entries, onExpenseSaved, onExpensesRemove
     {notice && <p className="notice-banner" role="status">{notice}</p>}
     <div className="receipt-layout">
       <aside className="receipt-folders data-card">
-        <div className="receipt-panel-head"><h2>Folders <small>{folders.length}</small></h2><button className="secondary" type="button" onClick={() => { setEditingFolder(false); setShowFolderForm(true); setFolderForm({ name: '', walletId: '', budget: '', reason: '' }) }}>+ New folder</button></div>
-        {folders.length ? <div className="receipt-folder-list">{folders.map((item) => <button key={item.id} className={folderId === item.id ? 'selected' : ''} type="button" onClick={() => { setFolderId(item.id); setEditingFolder(false); setShowFolderForm(false); setFolderForm({ name: '', walletId: '', budget: '', reason: '' }); setError('') }}><strong>{item.name}</strong><small>{wallets.find((wallet) => wallet.id === item.walletId)?.name || 'Wallet'} · {receipts.filter((receipt) => receipt.folderId === item.id).length} records</small></button>)}</div> : <p className="receipt-empty-copy">Create a folder to group expenses and receipts.</p>}
+        <div className="receipt-panel-head"><h2>Folders <small>{folders.length}</small></h2><button className="secondary" type="button" onClick={() => { setEditingFolder(false); setShowFolderForm(true); setFolderForm({ name: '', walletId: '', budget: '', budgetNote: '', reason: '' }) }}>+ New folder</button></div>
+        {folders.length ? <div className="receipt-folder-list">{folders.map((item) => <button key={item.id} className={folderId === item.id ? 'selected' : ''} type="button" onClick={() => { setFolderId(item.id); setEditingFolder(false); setShowFolderForm(false); setFolderForm({ name: '', walletId: '', budget: '', budgetNote: '', reason: '' }); setError('') }}><strong>{item.name}</strong><small>{wallets.find((wallet) => wallet.id === item.walletId)?.name || 'Wallet'} · {receipts.filter((receipt) => receipt.folderId === item.id).length} records</small></button>)}</div> : <p className="receipt-empty-copy">Create a folder to group expenses and receipts.</p>}
         {showFolderForm && <form className="receipt-folder-form" onSubmit={submitFolder}>
           <h3>{editingFolder ? 'Edit folder' : 'New folder'}</h3>
           <label>Folder name<input required maxLength="60" value={folderForm.name} placeholder="e.g. Procurement 1" onChange={(event) => setFolderForm({ ...folderForm, name: event.target.value })} /></label>
           <label>Expense wallet<select required value={folderForm.walletId} onChange={(event) => setFolderForm({ ...folderForm, walletId: event.target.value })}><option value="">Choose a wallet</option>{activeWallets.map((wallet) => <option key={wallet.id} value={wallet.id}>{wallet.name}</option>)}{editingFolder && wallets.find((wallet) => wallet.id === folder.walletId)?.archived && <option value={folder.walletId}>{wallets.find((wallet) => wallet.id === folder.walletId)?.name} (archived)</option>}</select></label>
-          <label>Comparison budget (optional; no deduction)<input type="number" min="0.01" step="0.01" value={folderForm.budget} placeholder="₱ 0.00" onChange={(event) => setFolderForm({ ...folderForm, budget: event.target.value })} /></label>
+          <label>Allocated budget (optional; no deduction)<input type="number" min="0.01" step="0.01" value={folderForm.budget} placeholder="₱ 0.00" onChange={(event) => setFolderForm({ ...folderForm, budget: event.target.value })} /></label>
+          <label>Budget note (optional)<textarea rows="2" maxLength="300" value={folderForm.budgetNote} placeholder="Add context for this budget" onChange={(event) => setFolderForm({ ...folderForm, budgetNote: event.target.value })} /></label>
           {editingFolder && <label>Reason for change<textarea required rows="2" maxLength="300" value={folderForm.reason} onChange={(event) => setFolderForm({ ...folderForm, reason: event.target.value })} /></label>}
-          <div className="receipt-form-actions"><button className="primary" disabled={Boolean(busy)} type="submit">{editingFolder ? 'Save folder' : 'Create folder'}</button><button className="secondary" type="button" onClick={() => { setEditingFolder(false); setShowFolderForm(false); setFolderForm({ name: '', walletId: '', budget: '', reason: '' }) }}>Cancel</button></div>
+          <div className="receipt-form-actions"><button className="primary" disabled={Boolean(busy)} type="submit">{editingFolder ? 'Save folder' : 'Create folder'}</button><button className="secondary" type="button" onClick={() => { setEditingFolder(false); setShowFolderForm(false); setFolderForm({ name: '', walletId: '', budget: '', budgetNote: '', reason: '' }) }}>Cancel</button></div>
         </form>}
       </aside>
       <section className="receipt-records data-card">
         {folder ? <>
           <div className="receipt-panel-head"><div><span className="widget-kicker">FOLDER RECORD</span><h2>{folder.name}</h2><p>Expenses are deducted from {wallets.find((wallet) => wallet.id === folder.walletId)?.name || 'the assigned wallet'}.</p></div><div className="receipt-toolbar"><button className="secondary" type="button" onClick={beginFolderEdit}>Edit folder</button><button className="secondary" type="button" onClick={deleteFolder}>Delete</button></div></div>
-          <div className="receipt-summary"><div><small>Recorded spending</small><strong>{displayMoney(folderTotal)}</strong></div><div><small>Comparison budget</small><strong>{folder.budget ? displayMoney(folder.budget) : 'No limit'}</strong></div><div><small>{remaining === null ? 'Records' : remaining < 0 ? 'Over budget' : 'Remaining'}</small><strong>{remaining === null ? folderReceipts.length : displayMoney(Math.abs(remaining))}</strong></div></div>
+          <div className="receipt-summary"><div><small>Recorded spending</small><strong>{displayMoney(folderTotal)}</strong></div><div className="receipt-budget-summary"><small>Allocated budget</small><strong>{folder.budget ? displayMoney(folder.budget) : 'No limit'}</strong>{folder.budgetNote && <p>{folder.budgetNote}</p>}<button className="secondary receipt-budget-edit" type="button" onClick={beginFolderEdit}>Edit budget</button></div><div><small>{remaining === null ? 'Records' : remaining < 0 ? 'Over budget' : 'Remaining'}</small><strong>{remaining === null ? folderReceipts.length : displayMoney(Math.abs(remaining))}</strong></div></div>
           <div className="receipt-add-row"><h3>Expense records</h3><div className="receipt-toolbar"><button className="secondary" type="button" onClick={() => openScanner(null, true)}>+ Add amount</button><button className="primary" type="button" onClick={() => openScanner()}>+ Scan or upload</button></div></div>
           {folderReceipts.length ? <div className="receipt-items">{folderReceipts.map((receipt) => {
             const entry = entryById.get(receipt.entryId)
