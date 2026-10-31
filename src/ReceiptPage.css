@@ -180,3 +180,83 @@
   .receipt-item-actions { grid-column: 2; }
   .receipt-viewer-content { padding: 0 16px 18px; }
 }
+
+/* Keep receipt content aligned when folder names and merchant details are long. */
+.receipt-page,
+.receipt-layout,
+.receipt-folders,
+.receipt-records,
+.receipt-panel-head,
+.receipt-add-row,
+.receipt-item,
+.receipt-item-main {
+  min-width: 0;
+}
+
+.receipt-panel-head > div,
+.receipt-add-row > div {
+  min-width: 0;
+}
+
+.receipt-item-main strong,
+.receipt-item-main span,
+.receipt-item-main small {
+  overflow-wrap: anywhere;
+}
+
+.receipt-item-amount {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.receipt-summary > div {
+  min-width: 0;
+}
+
+.receipt-drive-actions,
+.receipt-form-actions,
+.receipt-toolbar {
+  align-items: center;
+}
+
+.receipt-drive-actions > *,
+.receipt-form-actions > *,
+.receipt-toolbar > * {
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  .receipt-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .receipt-panel-head,
+  .receipt-add-row {
+    align-items: stretch;
+  }
+
+  .receipt-item {
+    align-items: start;
+  }
+
+  .receipt-item-actions {
+    flex-wrap: wrap;
+  }
+
+  .receipt-drive-actions,
+  .receipt-form-actions,
+  .receipt-toolbar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .receipt-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .receipt-folders,
+  .receipt-records {
+    padding: 15px;
+  }
+}

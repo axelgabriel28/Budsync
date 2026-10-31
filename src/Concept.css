@@ -317,3 +317,169 @@
   .transaction { grid-template-columns: 38px minmax(0,1fr) auto; gap: 9px; padding-inline: 11px; }
   .transaction-amount { min-width: 80px; }
 }
+
+/* Consistent page geometry and predictable wrapping across the workspace. */
+.main,
+.content,
+.overview-summary > *,
+.overview-activity-grid > *,
+.overview-analytics,
+.panel,
+.data-page,
+.data-card,
+.history,
+.receipt-page {
+  min-width: 0;
+}
+
+.content {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.page-head > div:first-child {
+  min-width: 0;
+}
+
+.page-head h1,
+.page-head p,
+.section-head h2,
+.section-head p {
+  overflow-wrap: anywhere;
+}
+
+.overview-summary,
+.overview-activity-grid,
+.wallet-grid,
+.report-summary,
+.report-grid,
+.quick-actions {
+  min-width: 0;
+}
+
+.overview-summary .metrics,
+.overview-summary .metric,
+.overview-summary .metric > div {
+  min-width: 0;
+}
+
+.overview-summary .metric strong,
+.report-summary .metric strong {
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-head {
+  flex-wrap: wrap;
+}
+
+.history-head > div {
+  min-width: 0;
+}
+
+.filters {
+  align-items: end;
+}
+
+.filters label {
+  min-width: 0;
+  flex: 1 1 150px;
+}
+
+.filters input,
+.filters select {
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-tabs {
+  flex-wrap: wrap;
+}
+
+.settings-tabs button {
+  flex: 1 1 160px;
+}
+
+.button-row {
+  align-items: center;
+}
+
+.button-row > * {
+  max-width: 100%;
+}
+
+.transaction-info,
+.transaction-info strong,
+.transaction-info span,
+.transaction-info small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 820px) {
+  .page-head {
+    align-items: flex-start;
+  }
+
+  .settings-tabs button {
+    flex: 1 1 190px;
+  }
+
+  .overview-activity-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .page-head > .primary {
+    align-self: flex-start;
+  }
+
+  .history-head {
+    align-items: center;
+  }
+
+  .history-head > button {
+    max-width: 100%;
+  }
+
+  .filters label {
+    flex-basis: 100%;
+  }
+
+  .filters button {
+    width: 100%;
+  }
+
+  .settings-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .settings-tabs button {
+    min-width: 0;
+    padding-inline: 10px;
+    overflow-wrap: anywhere;
+  }
+
+  .settings-tabs button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .transaction-amount {
+    text-align: right;
+  }
+}
